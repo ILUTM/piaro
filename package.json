@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "quill-image-uploader": "^1.3.0"
+  }
+}

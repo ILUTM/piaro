@@ -1,0 +1,41 @@
+.publications-list {
+    margin: 0 auto;
+    width: 90%;
+    list-style-type: none;
+    padding: 0;
+}
+
+.publication-container {
+border: 1px solid #ccc;
+border-radius: 10px;
+padding: 15px;
+margin-bottom: 20px;
+position: relative;
+max-width: 1500px;
+height: 300px;
+}
+
+.publication-title {
+font-weight: bold;
+text-align: center;
+margin: 10px 0;
+}
+
+.publication-author {
+font-size: 0.5em;
+position: absolute;
+top: 10px;
+left: 15px;
+}
+
+.publication-content {
+text-align: left;
+margin: 10px 0;
+}
+
+.publication-date {
+font-size: 0.5em;
+position: absolute;
+bottom: 10px;
+right: 15px;
+}
