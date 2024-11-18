@@ -168,44 +168,6 @@ class LoginViewSet(viewsets.ViewSet):
 # END OF BLOCK OF USER VIEWSETS
 #=====================================================================
 
-class UserRegistrationViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserRegistrationSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        user = User.objects.get(username=serializer.data['username'])
-        refresh = RefreshToken.for_user(user)
-        headers = self.get_success_headers(serializer.data)
-        return Response({
-            'user': serializer.data,
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }, status=status.HTTP_201_CREATED, headers=headers)
-    
-
-class LoginViewSet(viewsets.ViewSet):
-    def create(self, request, *args, **kwargs):
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data['user']
-        login(request, user)
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-            'email': user.email,
-            'username': user.username,
-            'id': user.id,
-            'contact_number': user.contact_number,
-            'tg_contact': user.tg_contact,
-            'profile_photo': user.profile_photo.url if user.profile_photo else None,
-            'community_status': user.community_status,
-        }, status=status.HTTP_200_OK)
-
-
 class HashtagViewSet(viewsets.ModelViewSet):
     queryset = Hashtag.objects.all()
     serializer_class = HashtagSerializer
