@@ -39,16 +39,16 @@ class LoginSerializer(serializers.Serializer):
         username = data.get('username')
         password = data.get('password')
 
-        if username and password:
-            user = authenticate(username=username, password=password)
-            if user:
-                if not user.is_active:
-                    raise serializers.ValidationError('User account is disabled.')
-            else:
-                raise serializers.ValidationError('Unable to log in with provided credentials.')
-        else:
+        if not (username and password):
             raise serializers.ValidationError('Must include "username" and "password".')
-
+        
+        user = authenticate(username=username, password=password)
+        
+        if user is None:
+            raise serializers.ValidationError('Unable to log in with provided credentials.')
+        
+        if not user.is_active:
+            raise serializers.ValidationError('User account is disabled.')
         data['user'] = user
         return data
     
