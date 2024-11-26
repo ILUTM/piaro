@@ -3,9 +3,6 @@ from django.db.models import Q
 import requests
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import make_password, check_password
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.core.files.storage import default_storage
 from django.core.cache import cache
@@ -13,12 +10,13 @@ from django.utils.timezone import now
 from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.views import APIView
 from .utils import HandleImagesInContent
 from .models import Hashtag, Community, Publication, Comment, Subscription, User
 from .serializers import HashtagSerializer, CommunitySerializer, PublicationSerializer, CommentSerializer, SubscriptionSerializer, UserRegistrationSerializer, UserSerializer, LoginSerializer
@@ -145,7 +143,24 @@ class UserRegistrationViewSet(viewsets.ModelViewSet):
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         }, status=status.HTTP_201_CREATED, headers=headers)
-    
+
+
+class VerifyRefreshToken(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        data = {
+            'email': user.email,
+            'username': user.username,
+            'id': user.id,
+            'contact_number': user.contact_number,
+            'tg_contact': user.tg_contact,
+            'profile_photo': user.profile_photo.url if user.profile_photo else None,
+            'community_status': user.community_status,
+        }
+        return Response(data, status=status.HTTP_200_OK)
+
 
 class LoginViewSet(viewsets.ViewSet):
     def create(self, request, *args, **kwargs):
@@ -154,8 +169,7 @@ class LoginViewSet(viewsets.ViewSet):
         user = serializer.validated_data['user']
         login(request, user)
         refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
+        response = Response({
             'access': str(refresh.access_token),
             'email': user.email,
             'username': user.username,
@@ -165,6 +179,16 @@ class LoginViewSet(viewsets.ViewSet):
             'profile_photo': user.profile_photo.url if user.profile_photo else None,
             'community_status': user.community_status,
         }, status=status.HTTP_200_OK)
+        response.set_cookie(
+            'refresh_token', 
+            str(refresh), 
+            httponly=True, 
+            secure=True, 
+            samesite='None', 
+            max_age=1209600,
+            domain='127.0.0.1'
+            )
+        return response
 # END OF BLOCK OF USER VIEWSETS
 #=====================================================================
 
