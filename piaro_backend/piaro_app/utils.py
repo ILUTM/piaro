@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.conf import settings
+from rest_framework_simplejwt.tokens import AccessToken
 
 
 class HandleImagesInContent:
@@ -50,8 +51,8 @@ class HandleImagesInContent:
     
 class CreateResponse:
     
-    @classmethod
-    def create_user_response(user, refresh_token=None):
+    @staticmethod
+    def create_user_response(user, refresh_token=None, access_token=None):
         response_data = {
             'email': user.email,
             'username': user.username,
@@ -61,7 +62,11 @@ class CreateResponse:
             'profile_photo': user.profile_photo.url if user.profile_photo else None,
             'community_status': user.community_status,
         }
+
         if refresh_token:
+            print('i am refresh token')
             response_data['access'] = str(refresh_token.access_token)
+        if access_token:
+            response_data['access'] = str(access_token)
         return response_data
 

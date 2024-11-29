@@ -11,15 +11,33 @@ export function AuthProvider({ children }) {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('authUser');
-        const storedIsLoggedIn = localStorage.getItem('isLoggedIn');
-        if (storedUser && storedIsLoggedIn) {
-            setAuthUser(JSON.parse(storedUser));
-            setIsLoggedIn(JSON.parse(storedIsLoggedIn));
-        }
+        checkAuthentication();
     }, []);
 
+    const checkAuthentication = async() => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/check_auth/', {
+              method: 'GET',
+              credentials: 'include'  
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setAuthUser(data);
+                setIsLoggedIn(true);
+            } else {
+                setAuthUser(null);
+                setIsLoggedIn(false);
+            }
+        } catch (error) {
+            console.error('Authentication check error:', error);
+            setAuthUser(null);
+            setIsLoggedIn(false);
+        }
+    };
+     
     useEffect(() => {
+        // Optional: You might want to remove this if you don't need Local Storage persistence
         localStorage.setItem('authUser', JSON.stringify(authUser));
         localStorage.setItem('isLoggedIn', JSON.stringify(isLoggedIn));
     }, [authUser, isLoggedIn]);

@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import HashtagViewSet, CommunityViewSet, PublicationViewSet, CommentViewSet, SubscriptionViewSet, UserRegistrationViewSet, LoginViewSet, UserViewSet
+from .views import HashtagViewSet, CommunityViewSet, PublicationViewSet, CommentViewSet, SubscriptionViewSet, UserRegistrationViewSet, LoginViewSet, UserViewSet, CheckAuthView
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -23,4 +23,5 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('utils/', include('utils.urls')),
+    path('check_auth/', CheckAuthView.as_view(), name='check_auth'),
 ]

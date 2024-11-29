@@ -11,13 +11,13 @@ from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
-from .utils import HandleImagesInContent
+from .utils import HandleImagesInContent, CreateResponse
 from .models import Hashtag, Community, Publication, Comment, Subscription, User
 from .serializers import HashtagSerializer, CommunitySerializer, PublicationSerializer, CommentSerializer, SubscriptionSerializer, UserRegistrationSerializer, UserSerializer, LoginSerializer
 
@@ -126,6 +126,12 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(user)
         return Response(serializer.data)
     
+    # @action(detail=False, methods=['put'])
+    # def verify_refresh(self, request):
+    #     user = request.user
+    #     serializer = self.get_serializer(user)
+    #     return Response(serializer.data)
+    
     
 class UserRegistrationViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -145,49 +151,45 @@ class UserRegistrationViewSet(viewsets.ModelViewSet):
         }, status=status.HTTP_201_CREATED, headers=headers)
 
 
-class VerifyRefreshToken(APIView):
-    permission_classes = [IsAuthenticated]
+class CheckAuthView(APIView):
+    def get(self, request):
+        refresh_token = request.COOKIES.get('refresh_token')
+        if not refresh_token:
+            return Response({'detail': 'Authentication credentials were not provided'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    def post(self, request):
-        user = request.user
-        data = {
-            'email': user.email,
-            'username': user.username,
-            'id': user.id,
-            'contact_number': user.contact_number,
-            'tg_contact': user.tg_contact,
-            'profile_photo': user.profile_photo.url if user.profile_photo else None,
-            'community_status': user.community_status,
-        }
-        return Response(data, status=status.HTTP_200_OK)
+        try:
+            token = RefreshToken(refresh_token)
 
-
+            user_id = token.payload.get('user_id')
+            if not user_id:
+                return Response({'detail': 'Invalid token payload'}, status=status.HTTP_401_UNAUTHORIZED)
+            user = User.objects.get(id=user_id)
+            access_token = AccessToken.for_user(user)         
+            return Response(CreateResponse.create_user_response(user, access_token = access_token), status=status.HTTP_200_OK)
+        except Exception as e:
+            print(f'Error during token validation: {e}')
+            return Response({'detail': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        
 class LoginViewSet(viewsets.ViewSet):
     def create(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
         login(request, user)
-        refresh = RefreshToken.for_user(user)
-        response = Response({
-            'access': str(refresh.access_token),
-            'email': user.email,
-            'username': user.username,
-            'id': user.id,
-            'contact_number': user.contact_number,
-            'tg_contact': user.tg_contact,
-            'profile_photo': user.profile_photo.url if user.profile_photo else None,
-            'community_status': user.community_status,
-        }, status=status.HTTP_200_OK)
+        refresh_token = RefreshToken.for_user(user)
+        print("User retrieved:", user)
+        print(refresh_token)
+        response = Response(CreateResponse.create_user_response(user, refresh_token), status=status.HTTP_200_OK)
         response.set_cookie(
             'refresh_token', 
-            str(refresh), 
+            str(refresh_token), 
             httponly=True, 
             secure=True, 
             samesite='None', 
             max_age=1209600,
             domain='127.0.0.1'
-            )
+        )
         return response
 # END OF BLOCK OF USER VIEWSETS
 #=====================================================================
