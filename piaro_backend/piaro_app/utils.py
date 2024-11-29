@@ -47,3 +47,21 @@ class HandleImagesInContent:
         content = self.get_content()
         updated_content = self.store_images(content)
         return updated_content
+    
+class CreateResponse:
+    
+    @classmethod
+    def create_user_response(user, refresh_token=None):
+        response_data = {
+            'email': user.email,
+            'username': user.username,
+            'id': user.id,
+            'contact_number': user.contact_number,
+            'tg_contact': user.tg_contact,
+            'profile_photo': user.profile_photo.url if user.profile_photo else None,
+            'community_status': user.community_status,
+        }
+        if refresh_token:
+            response_data['access'] = str(refresh_token.access_token)
+        return response_data
+
