@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../components/AuthContext/AuthContext';
+import default_profile_photo from '../../static/default_profile_photo.png'
 
 const ProfilePage = () => {
   const { authUser, setAuthUser } = useAuth();
@@ -54,6 +55,7 @@ const ProfilePage = () => {
     })
     .then(data => {
       setAuthUser(data);
+      setUserData(data);
       alert('Profile updated successfully');
     })
     .catch(error => { 
@@ -62,7 +64,8 @@ const ProfilePage = () => {
     });
   };
 
-  const handlePhotoUpdate = () => {
+  const handlePhotoUpdate = async (e) => {
+    e.preventDefault();
     const token = localStorage.getItem('token');
     const formData = new FormData();
     formData.append('profile_photo', userData.profile_photo);
@@ -81,6 +84,7 @@ const ProfilePage = () => {
     })
     .then(data => {
       setAuthUser (data); 
+      setUserData(data);
       alert('Profile photo updated successfully');
     })
     .catch(error => {
@@ -168,22 +172,25 @@ const ProfilePage = () => {
     <div className="profile-container">
       <h2 className="profile-header">Profile</h2>
       {error && <p className="error">{error}</p>}
-      <form onSubmit={handlePhotoUpdate} className="profile-form">
-        <div className="profile-photo-section">
-          {userData.profile_photo ? (
-            <img src={userData.profile_photo} alt="Profile" className="profile-photo" />
-          ) : (
-            <p className="no-photo">No profile photo</p>
-          )}
+      {userData.profile_photo ? ( 
+            <img src={userData.profile_photo} alt="Profile" className="profile-photo" /> 
+            ) : ( 
+            <div> 
+              <img src={default_profile_photo} alt="Profile" className="profile-photo" /> 
+            <p className="no-photo">No profile photo</p> </div> 
+      )} 
+      <form onSubmit={handlePhotoUpdate} className="profile-form"> 
+        <div className="profile-photo-section"> 
           <input 
             type="file" 
             id="profilePhoto" 
-            onChange={(e) => setUserData({ ...userData, profile_photo: e.target.files[0] })}
-            className="profile-photo-input" 
-          />
-          <button type="submit" className="update-button">Change Photo</button>
-        </div>
-      </form>
+            onChange={(e) => setUserData({ ...userData, profile_photo: e.target.files[0] })} 
+            className="profile-photo-input" style={{ display: 'none' }} 
+          /> 
+          <label htmlFor="profilePhoto" className="profile-photo-input-label"> Choose Photo </label> 
+        </div> 
+        <button type="submit" className="update-button">Update photo</button> 
+      </form> 
       <form className="profile-form"> 
         <label className="profile-label"> 
           <input 

@@ -5,6 +5,7 @@ import ProfilePublications from './ProfilePublications';
 import ProfileComments from './ProfileComments';
 import '../../sharedStyles/ProfileMain.css'; 
 
+
 const ProfileMain = () => {
   const [activeTab, setActiveTab] = useState('profile');
 

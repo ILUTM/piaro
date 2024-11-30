@@ -16,6 +16,7 @@ const Header = () => {
   const handleLogout = () => {
     setAuthUser(null);
     setIsLoggedIn(false);
+    navigate('/');
   };
 
   const handleProfileClick = () => {

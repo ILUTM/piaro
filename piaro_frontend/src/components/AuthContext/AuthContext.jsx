@@ -25,6 +25,7 @@ export function AuthProvider({ children }) {
                 const data = await response.json();
                 setAuthUser(data);
                 setIsLoggedIn(true);
+                localStorage.setItem('token', data.access);
             } else {
                 setAuthUser(null);
                 setIsLoggedIn(false);

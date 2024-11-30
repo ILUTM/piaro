@@ -14,7 +14,7 @@ const CommentField = ({ publicationId }) => {
   const fetchComments = useCallback(async () => {
     try {
       setIsFetching(true);
-      const response = await fetch(`http://127.0.0.1:8000/piaro/comments/${publicationId}/get_comments_by_publication/`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/comments/${publicationId}/get_comments_by_publication/`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -47,8 +47,8 @@ const CommentField = ({ publicationId }) => {
     }
 
     const url = replyTo
-      ? `http://127.0.0.1:8000/piaro/comments/${replyTo}/add_reply/`
-      : `http://127.0.0.1:8000/piaro/comments/${publicationId}/add_comment/`;
+      ? `http://127.0.0.1:8000/api/comments/${replyTo}/add_reply/`
+      : `http://127.0.0.1:8000/api/comments/${publicationId}/add_comment/`;
 
     try {
       setIsAddingComment(true);

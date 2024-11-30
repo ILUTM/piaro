@@ -2,6 +2,7 @@ import './App.css';
 import './sharedStyles/App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './components/AuthContext/AuthContext';
+import ProtectedRoute from './components/AuthContext/ProtectedRoute';
 import Header from './components/header/Header';
 import SideBar from './components/SideBar/SideBar';
 import HomePage from './pages/HomePage/HomePage';
@@ -22,7 +23,7 @@ function App() {
           <SideBar className='sidebar'/>
           <Routes className="main-content">
             <Route exact path="/" element={<HomePage />} />
-            <Route path="/profile" element={<ProfileMain />} />
+            <Route path="/profile" element={<ProtectedRoute element={ProfileMain} />} />
             <Route path="/create-publication" element={<CreatePublication />} />
             <Route path="/publication/:id" element={<PublicationPage />} />
             <Route path="/community/:id" element={<CommunityPage />} />

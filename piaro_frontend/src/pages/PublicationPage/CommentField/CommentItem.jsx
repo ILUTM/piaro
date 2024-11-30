@@ -13,7 +13,7 @@ const CommentItem = ({ comment, handleReply, replyTo }) => {
       return;
     }
 
-    const url = `http://127.0.0.1:8000/piaro/comments/${comment.id}/add_reply/`;
+    const url = `http://127.0.0.1:8000/api/comments/${comment.id}/add_reply/`;
 
     try {
       const response = await fetch(url, {
