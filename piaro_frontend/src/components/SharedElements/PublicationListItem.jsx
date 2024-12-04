@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../sharedStyles/PublicationList.css';
 
 const PublicationListItem = ({ 
@@ -11,9 +12,14 @@ const PublicationListItem = ({
   }) => {
   const [showMore, setShowMore] = useState(false);
   const [showAllHashtags, setShowAllHashtags] = useState(false);
+  const navigate = useNavigate();
 
   const handleShowMore = () => setShowMore(!showMore);
   const handleShowAllHashtags = () => setShowAllHashtags(!showAllHashtags);
+
+  const handleHashtagClick = (hashtag) => { 
+    navigate(`/search?hashtags=${hashtag}`); 
+  };
 
   return (
     <li
@@ -49,7 +55,7 @@ const PublicationListItem = ({
       <div className="publication-footer">
         <ul className="publication-hashtags">
           {publication.hashtags.slice(0, showAllHashtags ? publication.hashtags.length : 2).map((hashtag, index) => (
-            <li key={index} className="hashtag">{hashtag.name}</li>
+            <li key={index} className="hashtag" onClick={() => handleHashtagClick(hashtag.name)}>{hashtag.name}</li>
           ))}
           {publication.hashtags.length > 2 && (
             <button onClick={handleShowAllHashtags}>
