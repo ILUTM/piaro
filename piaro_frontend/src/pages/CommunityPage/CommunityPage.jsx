@@ -195,6 +195,10 @@ const CommunityPage = () => {
     navigate('/create-publication', { state: { community } });
   };
 
+  const handleCommunityClick = (id) => {
+    navigate(`/community/${id}`);
+  };
+
   useEffect(() => {
     fetchCommunity();
     fetchPublications(pageNumber);
@@ -239,6 +243,7 @@ const CommunityPage = () => {
               lastPublicationElementRef={index === publications.length - 1 ? lastPublicationElementRef : null}
               handlePublicationClick={handlePublicationClick}
               handleUserClick={handleUserClick}
+              handleCommunityClick={handleCommunityClick}
             />
           ))}
         </ul>

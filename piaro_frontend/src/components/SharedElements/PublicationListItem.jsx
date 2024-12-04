@@ -7,6 +7,7 @@ const PublicationListItem = ({
   lastPublicationElementRef, 
   handlePublicationClick,
   handleUserClick,
+  handleCommunityClick,
   }) => {
   const [showMore, setShowMore] = useState(false);
   const [showAllHashtags, setShowAllHashtags] = useState(false);
@@ -21,10 +22,10 @@ const PublicationListItem = ({
       className="publication-container"
     >
       <div className="publication-header">
-        <p className="publication-author" onClick={() => handleUserClick(publication.author.id)}>
+        <p className="publication-author" onClick={() => handleUserClick(publication.author_id)}>
           {publication.author}
         </p>
-        <p className="publication-community">{publication.community}</p>
+        <p className="publication-community" onClick={() => handleCommunityClick(publication.community)}>{publication.community_name}</p>
         <p className="publication-date">{new Date(publication.date_posted).toLocaleString()}</p>
       </div>
 

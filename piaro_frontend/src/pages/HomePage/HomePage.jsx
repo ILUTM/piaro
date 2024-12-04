@@ -53,6 +53,10 @@ const HomePage = () => {
     navigate(`/user/${id}`);
   };
 
+  const handleCommunityClick = (id) => {
+    navigate(`/community/${id}`);
+  };
+
   return (
     <div className="homepage-wrapper">
       <h2>Newest Publications</h2>
@@ -67,6 +71,7 @@ const HomePage = () => {
               lastPublicationElementRef={index === publications.length - 1 ? lastPublicationElementRef : null}
               handlePublicationClick={handlePublicationClick}
               handleUserClick={handleUserClick}
+              handleCommunityClick={handleCommunityClick}
             />
           ))}
         </ul>

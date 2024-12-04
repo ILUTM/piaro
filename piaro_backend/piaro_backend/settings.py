@@ -36,7 +36,6 @@ INSTALLED_APPS = [
     'utils.apps.UtilsConfig',
     'corsheaders',
     'rest_framework_simplejwt',
-    'debug_toolbar',
 ]
 
 MIDDLEWARE = [

@@ -74,6 +74,7 @@ class PublicationSerializer(serializers.ModelSerializer):
     author_id = serializers.ReadOnlyField(source='author.id')  
     hashtags = HashtagSerializer(many=True, required=False)
     community = serializers.PrimaryKeyRelatedField(queryset=Community.objects.all())
+    community_name = serializers.ReadOnlyField(source='community.name')
     content = serializers.JSONField() 
 
     class Meta:
