@@ -88,7 +88,7 @@ const CommunityPage = () => {
       }),
     })
     .then(response => {
-      if (response.status == 401) {
+      if (response.status === 401) {
         alert('Login to subscribe');
         return;
       };
@@ -183,20 +183,8 @@ const CommunityPage = () => {
 
   const lastPublicationElementRef = useInfiniteScroll(hasMore, isFetching, setPageNumber);
 
-  const handleUserClick = (id) => {
-    navigate(`/user/${id}`);
-  };
-
-  const handlePublicationClick = (id) => {
-    navigate(`/Publication/${id}`);
-  };
-
   const navigateToCreatePublication = () => {
     navigate('/create-publication', { state: { community } });
-  };
-
-  const handleCommunityClick = (id) => {
-    navigate(`/community/${id}`);
   };
 
   useEffect(() => {
@@ -209,7 +197,7 @@ const CommunityPage = () => {
     if (community && contentType) {
       checkSubscription();
     }
-  }, [community, contentType]);
+  }, [community, contentType, checkSubscription]);
 
   return (
     <div>
@@ -241,9 +229,6 @@ const CommunityPage = () => {
               publication={publication}
               index={index}
               lastPublicationElementRef={index === publications.length - 1 ? lastPublicationElementRef : null}
-              handlePublicationClick={handlePublicationClick}
-              handleUserClick={handleUserClick}
-              handleCommunityClick={handleCommunityClick}
             />
           ))}
         </ul>

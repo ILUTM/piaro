@@ -3,12 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import '../../sharedStyles/PublicationList.css';
 
 const PublicationListItem = ({ 
-  publication, 
-  index, 
-  lastPublicationElementRef, 
-  handlePublicationClick,
-  handleUserClick,
-  handleCommunityClick,
+    publication, 
+    index, 
+    lastPublicationElementRef, 
   }) => {
   const [showMore, setShowMore] = useState(false);
   const [showAllHashtags, setShowAllHashtags] = useState(false);
@@ -19,6 +16,18 @@ const PublicationListItem = ({
 
   const handleHashtagClick = (hashtag) => { 
     navigate(`/search?hashtags=${hashtag}`); 
+  };
+
+  const handlePublicationClick = (id) => {
+    navigate(`/Publication/${id}`);
+  };
+  
+  const handleUserClick = (id) => {
+    navigate(`/user/${id}`);
+  };
+
+  const handleCommunityClick = (id) => {
+    navigate(`/community/${id}`);
   };
 
   return (

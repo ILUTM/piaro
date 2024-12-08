@@ -13,13 +13,26 @@ const Header = () => {
   const { authUser, isLoggedIn, setAuthUser, setIsLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    setAuthUser(null);
-    setIsLoggedIn(false);
-    navigate('/');
+  const handleLogout = () => { 
+    fetch('http://127.0.0.1:8000/api/logout/', { 
+      method: 'POST', 
+      headers: { 
+        'Authorization': `Bearer ${localStorage.getItem('token')}`, 
+        'Content-Type': 'application/json', 
+      } }) 
+    .then(response => { 
+      if (!response.ok) { 
+        throw new Error('Network response was not ok'); 
+      } 
+      localStorage.removeItem('token'); 
+      setAuthUser(null); setIsLoggedIn(false); 
+      navigate('/'); }) 
+    .catch(error => { 
+      console.error('There was an error logging out!', error); 
+    }); 
   };
-
-  const handleProfileClick = () => {
+  
+    const handleProfileClick = () => {
     navigate('/profile');
   };
 

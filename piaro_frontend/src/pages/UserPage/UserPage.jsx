@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 
@@ -10,7 +10,6 @@ const UserPage = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
-  const navigate = useNavigate();
 
   const fetchUserData = useCallback(() => {
       fetch(`http://127.0.0.1:8000/api/users/${id}/get_user/`, {
@@ -57,10 +56,6 @@ const UserPage = () => {
       }
     }, [id]);
 
-    const handlePublicationClick = (id) => {
-      navigate(`/Publication/${id}`);
-    };
-
     const lastPublicationElementRef = useInfiniteScroll(hasMore, isFetching, setPageNumber);
 
     useEffect(() => {
@@ -89,7 +84,6 @@ const UserPage = () => {
                   publication={publication}
                   index={index}
                   lastPublicationElementRef={index === publications.length - 1 ? lastPublicationElementRef : null}
-                  handlePublicationClick={handlePublicationClick}
                 />
               ))}
             </ul>

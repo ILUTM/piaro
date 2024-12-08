@@ -1,7 +1,7 @@
 #allow me to create complex queries to ORM
 from django.db.models import Q
 import requests
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import get_object_or_404
 from django.core.files.storage import default_storage
@@ -178,8 +178,6 @@ class LoginViewSet(viewsets.ViewSet):
         user = serializer.validated_data['user']
         login(request, user)
         refresh_token = RefreshToken.for_user(user)
-        print("User retrieved:", user)
-        print(refresh_token)
         response = Response(CreateResponse.create_user_response(user, refresh_token), status=status.HTTP_200_OK)
         response.set_cookie(
             'refresh_token', 
@@ -191,6 +189,26 @@ class LoginViewSet(viewsets.ViewSet):
             domain='127.0.0.1'
         )
         return response
+    
+class LogoutViewSet(viewsets.ViewSet):
+    def create(self, request, *args, **kwargs):
+        try:
+            refresh_token = request.COOKIES.get('refresh_token')
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+
+            logout(request)
+            
+            response = Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
+            # Explicitly delete the cookie
+            
+            response.delete_cookie('refresh_token', domain='127.0.0.1', samesite='Lax')
+            print('i break here')
+            return response
+        except Exception as e:
+            return Response({"detail": "Something went wrong during logout."}, status=status.HTTP_400_BAD_REQUEST)
+
 # END OF BLOCK OF USER VIEWSETS
 #=====================================================================
 

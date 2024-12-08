@@ -10,7 +10,6 @@ const MyPublicationsPage = () => {
   const [hasMore, setHasMore] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
   const [error, setError] = useState('');
-  const navigate = useNavigate();
 
   const fetchPublications = useCallback(async (page) => {
     const token = localStorage.getItem('token');
@@ -41,12 +40,6 @@ const MyPublicationsPage = () => {
 
   const lastPublicationElementRef = useInfiniteScroll(hasMore, isFetching, setPageNumber);
 
-
-
-  const handlePublicationClick = (id) => {
-    navigate(`/publication/${id}`);
-  };
-
   return (
     <div>
       <h1>My Publications</h1>
@@ -58,7 +51,6 @@ const MyPublicationsPage = () => {
             publication={publication}
             index={index}
             lastPublicationElementRef={index === publications.length - 1 ? lastPublicationElementRef : null}
-            handlePublicationClick={handlePublicationClick}
           />
         ))}
       </ul>

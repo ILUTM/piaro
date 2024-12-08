@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 import '../../sharedStyles/PublicationList.css'; 
@@ -11,7 +10,6 @@ const HomePage = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
-  const navigate = useNavigate();
 
   const fetchPublications = useCallback(async (page) => {
     try {
@@ -45,18 +43,6 @@ const HomePage = () => {
 
   const lastPublicationElementRef = useInfiniteScroll(hasMore, isFetching, setPageNumber);
 
-  const handlePublicationClick = (id) => {
-    navigate(`/Publication/${id}`);
-  };
-
-  const handleUserClick = (id) => {
-    navigate(`/user/${id}`);
-  };
-
-  const handleCommunityClick = (id) => {
-    navigate(`/community/${id}`);
-  };
-
   return (
     <div className="homepage-wrapper">
       <h2>Newest Publications</h2>
@@ -69,9 +55,6 @@ const HomePage = () => {
               publication={publication}
               index={index}
               lastPublicationElementRef={index === publications.length - 1 ? lastPublicationElementRef : null}
-              handlePublicationClick={handlePublicationClick}
-              handleUserClick={handleUserClick}
-              handleCommunityClick={handleCommunityClick}
             />
           ))}
         </ul>
