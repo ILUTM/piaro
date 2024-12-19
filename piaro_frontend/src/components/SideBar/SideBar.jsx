@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../../sharedStyles/SideBar.css'
+import '../../sharedStyles/SideBar.css';
 import { useAuth } from '../AuthContext/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,82 +8,81 @@ function SideBar() {
   const [users, setUsers] = useState([]);
   const [communities, setCommunities] = useState([]);
   const navigate = useNavigate();
-  const { authUser, isLoggedIn, setAuthUser, setIsLoggedIn } = useAuth();
+  const { authUser, isLoggedIn } = useAuth();
   const [contentTypeCommunity, setContentTypeCommunity] = useState(0);
   const [contentTypeUser, setContentTypeUser] = useState(0);
 
   useEffect(() => {
-    fetchSubscriptions();
-    fetchContentType();
-    fetchCommunities();
-    fetchUsers();
+    if (isLoggedIn) {
+      fetchContentType().then(fetchSubscriptions);
+    }
   }, [isLoggedIn, authUser]);
 
-  const fetchContentType = () => {
-    fetch('http://127.0.0.1:8000/api/utils/content_types/')
-      .then(response => response.json())
-      .then(data => {
-        setContentTypeCommunity(data.community);
-        setContentTypeUser(data.user);
-      })
-      .catch(error => console.error('Error fetching content types:', error));
-  };
+  useEffect(() => {
+    if (subscriptions.length > 0) {
+      fetchCommunities();
+      fetchUsers();
+    }
+  }, [subscriptions]);
 
-  const fetchSubscriptions = () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetch('http://127.0.0.1:8000/api/subscriptions/my_subscriptions/', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        setSubscriptions(data);
-      })
-      .catch(error => {
-        console.error('There was an error fetching the user data!', error);
-      });
+  const fetchContentType = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/utils/content_types/');
+      const data = await response.json();
+      setContentTypeCommunity(data.community);
+      setContentTypeUser(data.user);
+    } catch (error) {
+      console.error('Error fetching content types:', error);
     }
   };
 
-  const fetchCommunities = () => {
+  const fetchSubscriptions = async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/subscriptions/my_subscriptions/', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        setSubscriptions(data);
+      } catch (error) {
+        console.error('There was an error fetching the user data!', error);
+      }
+    }
+  };
+
+  const fetchCommunities = async () => {
     const communitySubscriptions = subscriptions.filter(sub => sub.content_type === contentTypeCommunity);
     const communityIds = communitySubscriptions.map(sub => sub.object_id);
 
-    fetch('http://127.0.0.1:8000/api/communities/')
-      .then(response => response.json())
-      .then(data => {
-        const filteredCommunities = data.filter(community => communityIds.includes(community.id));
-        setCommunities(filteredCommunities);
-      })
-      .catch(error => console.error('Error fetching communities:', error));
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/communities/');
+      const data = await response.json();
+      const filteredCommunities = data.filter(community => communityIds.includes(community.id));
+      setCommunities(filteredCommunities);
+    } catch (error) {
+      console.error('Error fetching communities:', error);
+    }
   };
 
-  const fetchUsers = () => {
+  const fetchUsers = async () => {
     const userSubscriptions = subscriptions.filter(sub => sub.content_type === contentTypeUser);
     const userIds = userSubscriptions.map(sub => sub.object_id);
 
-    fetch('http://127.0.0.1:8000/api/users/')
-      .then(response => response.json())
-      .then(data => {
-        const filteredUsers = data.filter(user => userIds.includes(user.id));
-        setUsers(filteredUsers);
-      })
-      .catch(error => console.error('Error fetching users:', error));
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/users/');
+      const data = await response.json();
+      const filteredUsers = data.filter(user => userIds.includes(user.id));
+      setUsers(filteredUsers);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
   };
 
-
-
   const handleCommunityClick = (id) => {
-      navigate(`/community/${id}`);
-  }
-
+    navigate(`/community/${id}`);
+  };
 
   return (
     <div className='sidebar'>
@@ -92,7 +91,17 @@ function SideBar() {
           <h2>Your Communities</h2>
           <ul>
             {communities.map(community => (
-              <li key={community.id} onClick={() => handleCommunityClick(community.id)}>{community.name}</li>
+              <li key={community.id} onClick={() => handleCommunityClick(community.id)}>
+                {community.name}
+              </li>
+            ))}
+          </ul>
+          <h2>Your Users</h2>
+          <ul>
+            {users.map(user => (
+              <li key={user.id}>
+                {user.username}
+              </li>
             ))}
           </ul>
         </div>
@@ -103,7 +112,8 @@ function SideBar() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 export default SideBar;
+
