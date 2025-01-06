@@ -1,3 +1,4 @@
+from django.db import transaction
 #allow me to create complex queries to ORM
 from django.db.models import Q
 import requests
@@ -10,7 +11,7 @@ from django.utils.timezone import now
 from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -18,8 +19,8 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from .utils import HandleImagesInContent, CreateResponse
-from .models import Hashtag, Community, Publication, Comment, Subscription, User
-from .serializers import HashtagSerializer, CommunitySerializer, PublicationSerializer, CommentSerializer, SubscriptionSerializer, UserRegistrationSerializer, UserSerializer, LoginSerializer
+from .models import Hashtag, Community, Publication, Comment, Subscription, User, Like
+from .serializers import HashtagSerializer, CommunitySerializer, PublicationSerializer, CommentSerializer, SubscriptionSerializer, UserRegistrationSerializer, UserSerializer, LoginSerializer, LikeSerializer
 
 
 # BLOCK OF USER VIEWSETS
@@ -487,4 +488,71 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
         subscription.send_notifications = not subscription.send_notifications 
         subscription.save()
         return Response({'send_notifications': subscription.send_notifications}, status=status.HTTP_200_OK)
+
+
+class LikeViewSet(viewsets.ModelViewSet):
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
+
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """
+        Fetch summary of likes and dislikes based on object_id and content_type
+        """
+        content_type = request.query_params.get('content_type')
+        object_id = request.query_params.get('object_id')
+        
+        if not content_type or not object_id:
+            return Response({"error": "content_type and object_id are required parameters"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            content_type_obj = ContentType.objects.get(model=content_type)
+        except ContentType.DoesNotExist:
+            return Response({"error": "Invalid content_type"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        likes_count = Like.objects.filter(content_type=content_type_obj, object_id=object_id, is_like=Like.LIKE).count()
+        dislikes_count = Like.objects.filter(content_type=content_type_obj, object_id=object_id, is_like=Like.DISLIKE).count()
+        
+        return Response({
+            "likes": likes_count,
+            "dislikes": dislikes_count,
+        })
+
+    @action(detail=False, methods=['post'])
+    def toggle(self, request):
+        user = request.user
+        content_type = request.data.get('content_type')
+        object_id = request.data.get('object_id')
+        action = request.data.get('action')
+
+        print("Received data:", request.data)  # Log the received data
+
+        if not content_type or not object_id or not action:
+            return Response({"error": "content_type, object_id, and action are required parameters"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            content_type_obj = ContentType.objects.get(pk=content_type)
+        except ContentType.DoesNotExist:
+            return Response({"error": "Invalid content_type"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        with transaction.atomic():
+            like, created = Like.objects.select_for_update().get_or_create(
+                user=user,
+                content_type=content_type_obj,
+                object_id=object_id,
+                defaults={'is_like': Like.LIKE if action == "like" else Like.DISLIKE}
+            )
+            if not created:
+                if action == "remove":
+                    like.delete()
+                    return Response({"message": "Like/dislike removed"})
+                else:
+                    like.is_like = Like.LIKE if action == "like" else Like.DISLIKE
+                    like.save()
+                    return Response({"message": "Action updated to " + action})
+        
+        return Response({"message": "Action " + action + " added"})
+
+
+
     

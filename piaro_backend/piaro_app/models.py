@@ -6,6 +6,7 @@ from django.db.models import JSONField
 from django.utils.deconstruct import deconstructible
 import os
 
+
 # BLOCK OF USER MODELS
 #===========================================================================
 @deconstructible
@@ -110,7 +111,7 @@ class Publication(models.Model):
         ordering = ['-date_posted']
         verbose_name = 'Publication'
         verbose_name_plural = 'Publications'
-
+        
 
 class Comment(models.Model):
     text = models.TextField()
@@ -136,5 +137,25 @@ class Subscription(models.Model):
 
     class Meta:
         unique_together = ('user', 'content_type', 'object_id')
+
+        
+class Like(models.Model):
+    LIKE = 1
+    DISLIKE = -1
+    VOTES = [
+        (LIKE, 'Like'),
+        (DISLIKE, 'Dislike'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+    is_like = models.IntegerField(choices=VOTES)
+    date_modified = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ('user', 'content_type', 'object_id')
+
 
 
