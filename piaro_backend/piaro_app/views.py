@@ -506,13 +506,12 @@ class LikeViewSet(viewsets.ModelViewSet):
             return Response({"error": "content_type and object_id are required parameters"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            content_type_obj = ContentType.objects.get(model=content_type)
+            content_type_obj = ContentType.objects.get(id=content_type)
         except ContentType.DoesNotExist:
             return Response({"error": "Invalid content_type"}, status=status.HTTP_400_BAD_REQUEST)
         
         likes_count = Like.objects.filter(content_type=content_type_obj, object_id=object_id, is_like=Like.LIKE).count()
         dislikes_count = Like.objects.filter(content_type=content_type_obj, object_id=object_id, is_like=Like.DISLIKE).count()
-        
         return Response({
             "likes": likes_count,
             "dislikes": dislikes_count,
@@ -525,8 +524,6 @@ class LikeViewSet(viewsets.ModelViewSet):
         object_id = request.data.get('object_id')
         action = request.data.get('action')
 
-        print("Received data:", request.data)  # Log the received data
-
         if not content_type or not object_id or not action:
             return Response({"error": "content_type, object_id, and action are required parameters"}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -536,22 +533,29 @@ class LikeViewSet(viewsets.ModelViewSet):
             return Response({"error": "Invalid content_type"}, status=status.HTTP_400_BAD_REQUEST)
         
         with transaction.atomic():
-            like, created = Like.objects.select_for_update().get_or_create(
-                user=user,
-                content_type=content_type_obj,
-                object_id=object_id,
-                defaults={'is_like': Like.LIKE if action == "like" else Like.DISLIKE}
-            )
-            if not created:
-                if action == "remove":
+            try:
+                like = Like.objects.select_for_update().get(
+                    user=user,
+                    content_type=content_type_obj,
+                    object_id=object_id
+                )
+                if (action == "like" and like.is_like == Like.LIKE) or (action == "dislike" and like.is_like == Like.DISLIKE):
                     like.delete()
                     return Response({"message": "Like/dislike removed"})
                 else:
                     like.is_like = Like.LIKE if action == "like" else Like.DISLIKE
                     like.save()
                     return Response({"message": "Action updated to " + action})
-        
-        return Response({"message": "Action " + action + " added"})
+            except Like.DoesNotExist:
+                Like.objects.create(
+                    user=user,
+                    content_type=content_type_obj,
+                    object_id=object_id,
+                    is_like=Like.LIKE if action == "like" else Like.DISLIKE
+                )
+                return Response({"message": "Action " + action + " added"})
+
+
 
 
 

@@ -35,9 +35,9 @@ const LikeComponent = ({ contentType, objectId }) => {
             {error && <p>{error}</p>}
             <button onClick={() => handleToggleLike('like')}>Like</button>
             <button onClick={() => handleToggleLike('dislike')}>Dislike</button>
-            <button onClick={() => handleToggleLike('remove')}>Remove</button>
         </div>
     );
 };
 
 export default LikeComponent;
+
