@@ -1,8 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CommentInput from './CommentInput';
+import LikeComponent from '../../../components/Like/LikeComponent';
+import { fetchContentTypeId } from '../../../utils/ContentTypes';
 
 const CommentItem = ({ comment, handleReply, replyTo }) => {
   const [replyComment, setReplyComment] = useState('');
+  const [contentTypeId, setContentTypeId] = useState(null);
+
+  useEffect(() => { 
+    const fetchContentType = async () => { 
+      const contentTypeId = await fetchContentTypeId('comment'); 
+      setContentTypeId(contentTypeId); 
+    }; fetchContentType(); 
+  }, []);
 
   const handleAddReply = async (e) => {
     e.preventDefault();
@@ -39,6 +49,7 @@ const CommentItem = ({ comment, handleReply, replyTo }) => {
       <p className="comment-author">{comment.author}</p>
       <p className="comment-text">{comment.text}</p>
       <p className="comment-date">{new Date(comment.date_posted).toLocaleString()}</p>
+      {contentTypeId && ( <LikeComponent contentType={contentTypeId} objectId={comment.id} /> )}
       <button className="reply-button" onClick={() => handleReply(comment.id)}>Reply</button>
       <button className="cancel-reply-button" onClick={() => handleReply(null)}>Cancel</button>
       {replyTo === comment.id && (

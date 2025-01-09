@@ -1,15 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import CommentField from './CommentField/CommentField';
+import LikeComponent from '../../components/Like/LikeComponent';
+import { fetchContentTypeId } from '../../utils/ContentTypes';
 
 const PublicationPage = () => {
   const { id } = useParams();
   const [publication, setPublication] = useState(null);
   const [error, setError] = useState('');
+  const [contentTypeId, setContentTypeId] = useState(null);
 
   useEffect(() => {
     fetchPublication();
   }, [id]);
+
+  useEffect(() => { 
+    const fetchContentType = async () => { 
+      const contentTypeId = await fetchContentTypeId('publication'); 
+      setContentTypeId(contentTypeId); }
+      ; fetchContentType(); 
+    }, []);
 
   const fetchPublication = () => {
     fetch(`http://127.0.0.1:8000/api/publications/${id}/get_publication/`, {
@@ -51,6 +61,7 @@ const PublicationPage = () => {
           <p>{new Date(publication.date_posted).toLocaleString()}</p>
         </li>
       </ul>
+      {contentTypeId && ( <LikeComponent contentType={contentTypeId} objectId={publication.id} /> )}
       <div className="comment-field-wrapper">
         <CommentField publicationId={id} />
       </div>
