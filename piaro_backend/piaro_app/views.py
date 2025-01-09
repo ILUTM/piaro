@@ -19,8 +19,8 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from .utils import HandleImagesInContent, CreateResponse
-from .models import Hashtag, Community, Publication, Comment, Subscription, User, Like
-from .serializers import HashtagSerializer, CommunitySerializer, PublicationSerializer, CommentSerializer, SubscriptionSerializer, UserRegistrationSerializer, UserSerializer, LoginSerializer, LikeSerializer
+from .models import Hashtag, Community, Publication, Comment, Subscription, User, Like, Collection
+from .serializers import HashtagSerializer, CommunitySerializer, PublicationSerializer, CommentSerializer, SubscriptionSerializer, UserRegistrationSerializer, UserSerializer, LoginSerializer, LikeSerializer, CollectionSerializer
 
 
 # BLOCK OF USER VIEWSETS
@@ -554,9 +554,59 @@ class LikeViewSet(viewsets.ModelViewSet):
                     is_like=Like.LIKE if action == "like" else Like.DISLIKE
                 )
                 return Response({"message": "Action " + action + " added"})
-
-
-
-
-
+            
+            
+class CollectionViewSet(viewsets.ModelViewSet):
+    queryset = Collection.objects.all()
+    serializer_class = CollectionSerializer
     
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            return Collection.objects.filter(user=user)
+        return Collection.objects.none()
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    
+    @action(detail=True, methods=['patch'])
+    def toggle_visibility(self, request, pk=None):
+        collection = self.get_object()
+        if collection.user != request.user:
+            return Response({'error': 'You do not have permission to modify this collection.'}, status=status.HTTP_403_FORBIDDEN)
+        collection.is_public = not collection.is_public
+        collection.save()
+        return Response({'status': 'visibility toggled'})
+
+    @action(detail=True, methods=['post'])
+    def add_publication(self, request, pk=None):
+        collection = self.get_object()
+        if collection.user != request.user:
+            return Response({'error': 'You do not have permission to modify this collection.'}, status=status.HTTP_403_FORBIDDEN)
+        publication_id = request.data.get('publication_id')
+        publication = get_object_or_404(Publication, id=publication_id)
+        collection.publications.add(publication)
+        return Response({'status': 'publication added'})
+    
+    @action(detail=True, methods=['get'])
+    def view_public(self, request, pk=None):
+        collection = self.get_object()
+        if collection.is_public:
+            serializer = self.get_serializer(collection)
+            return Response(serializer.data)
+        else:
+            return Response({'error': 'This collection is private.'}, status=status.HTTP_403_FORBIDDEN)
+        
+    @action(detail=True, methods=['post'])
+    def copy_collection(self, request, pk=None):
+        original_collection = self.get_object()
+        if not original_collection.is_public:
+            return Response({'error': 'This collection is private and cannot be copied.'}, status=status.HTTP_403_FORBIDDEN)
+        new_collection = Collection.objects.create(
+            user=request.user,
+            name=f'Copy of {original_collection.name}',
+            is_public=False
+        )
+        new_collection.publications.set(original_collection.publications.all())
+        new_collection.save()
+        return Response({'status': 'collection copied', 'collection': CollectionSerializer(new_collection).data})

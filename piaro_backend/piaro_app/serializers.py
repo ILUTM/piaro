@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Hashtag, Community, Publication, Comment, Subscription, User, Like
+from .models import Hashtag, Community, Publication, Comment, Subscription, User, Like, Collection
 from django.contrib.auth import authenticate
 
 
@@ -119,4 +119,10 @@ class LikeSerializer(serializers.ModelSerializer):
     
     class Meta: 
         model = Like 
+        fields = '__all__'
+        
+        
+class CollectionSerializer(serializers.ModelSerializer): 
+    class Meta: 
+        model = Collection 
         fields = '__all__'

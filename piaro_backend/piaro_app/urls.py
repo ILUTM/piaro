@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import HashtagViewSet, CommunityViewSet, PublicationViewSet, CommentViewSet, SubscriptionViewSet, UserRegistrationViewSet, LoginViewSet, UserViewSet, CheckAuthView, LogoutViewSet, LikeViewSet
+from .views import HashtagViewSet, CommunityViewSet, PublicationViewSet, CommentViewSet, SubscriptionViewSet, UserRegistrationViewSet, LoginViewSet, UserViewSet, CheckAuthView, LogoutViewSet, LikeViewSet, CollectionViewSet
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -18,6 +18,7 @@ router.register(r'login', LoginViewSet, basename='user-login')
 router.register(r'users', UserViewSet)
 router.register(r'logout', LogoutViewSet, basename='logout')
 router.register(r'likes', LikeViewSet, basename='like')
+router.register(r'collections', CollectionViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
