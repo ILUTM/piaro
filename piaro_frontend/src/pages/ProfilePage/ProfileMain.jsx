@@ -3,8 +3,8 @@ import ProfilePage from './ProfilePage';
 import ProfileCommunities from './ProfileCommunities';
 import ProfilePublications from './ProfilePublications';
 import ProfileComments from './ProfileComments';
+import ProfileLikes from './ProfileLikes';
 import '../../sharedStyles/ProfileMain.css'; 
-
 
 const ProfileMain = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -19,6 +19,8 @@ const ProfileMain = () => {
         return <ProfilePublications />;
       case 'comments':
         return <ProfileComments />;
+      case 'likes':
+        return <ProfileLikes />;
       default:
         return <ProfilePage />;
     }
@@ -31,6 +33,7 @@ const ProfileMain = () => {
         <button onClick={() => setActiveTab('communities')}>My Communities</button>
         <button onClick={() => setActiveTab('publications')}>My Publications</button>
         <button onClick={() => setActiveTab('comments')}>My Comments</button>
+        <button onClick={() => setActiveTab('likes')}>My Likes</button>
       </div>
       <div className="tab-content">
         {renderTabContent()}

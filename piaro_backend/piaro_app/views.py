@@ -555,6 +555,18 @@ class LikeViewSet(viewsets.ModelViewSet):
                 )
                 return Response({"message": "Action " + action + " added"})
             
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def my_likes(self, request):
+        publication_content_type = ContentType.objects.get_for_model(Publication)
+        comment_content_type = ContentType.objects.get_for_model(Comment)
+        publication_likes = Like.objects.filter(user=request.user) & Like.objects.filter(content_type=publication_content_type)
+        comment_likes = Like.objects.filter(user=request.user) & Like.objects.filter(content_type=comment_content_type)
+        combined_likes = list(publication_likes) + list(comment_likes)
+        serializer = self.get_serializer(combined_likes, many=True)
+        return Response(serializer.data)
+            
+            
+            
             
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()

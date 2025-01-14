@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchLikeSummary, toggleLike } from '../../utils/likeUtils';
+import { fetchLikeSummary, toggleLike } from './likeUtils';
 
 const LikeComponent = ({ contentType, objectId }) => {
     const [likeSummary, setLikeSummary] = useState({ likes: 0, dislikes: 0 });

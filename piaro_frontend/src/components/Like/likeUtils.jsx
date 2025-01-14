@@ -58,3 +58,23 @@ export const toggleLike = async (contentType, objectId, action) => {
     }
 };
 
+
+export const fetchUserLikes = async () => {
+  try {
+    const response = await fetch(`${apiUrl}/my_likes/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch user likes');
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching user likes:', error);
+    throw error;
+  }
+};
