@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'; 
 import { fetchUserLikes } from '../../components/Like/likeUtils'; 
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
+import '../../sharedStyles/ProfilePage.css';
 
 const ProfileLikes = () => {
     const [likes, setLikes] = useState([]);

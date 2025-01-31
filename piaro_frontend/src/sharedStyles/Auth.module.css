@@ -1,67 +1,88 @@
 .modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    width: 300px; /* Adjust as needed */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it overlays other content */
 }
 
-.modal-content {
-display: flex;
-flex-direction: column;
-align-items: center;
+.modalContent {
+  background-color: #fff;
+  padding: 20px;
+  width: 80%;
+  max-width: 400px;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 .close {
-position: absolute;
-top: 10px;
-right: 10px;
-cursor: pointer;
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 28px;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
 }
 
 h2 {
-margin-bottom: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #2c3e50;
 }
 
 .error {
-color: red;
-margin-bottom: 10px;
+  color: #e74c3c;
+  text-align: center;
+  margin-bottom: 10px;
 }
 
 form {
-display: flex;
-flex-direction: column;
-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 label {
-margin-bottom: 10px;
-font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  color: #2c3e50;
 }
 
 input {
-padding: 10px;
-margin-top: 5px;
-border: 1px solid #ccc;
-border-radius: 5px;
-width: calc(100% - 22px); /* Adjust for padding and border */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+input:focus {
+  border-color: #3498db;
+  outline: none;
 }
 
 button {
-padding: 10px;
-margin-top: 20px;
-border: none;
-border-radius: 5px;
-background-color: #007bff;
-color: white;
-cursor: pointer;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
 }
 
 button:hover {
-background-color: #0056b3;
+  background-color: #2980b9;
 }

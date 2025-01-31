@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import '../../../sharedStyles/CommentField.css'; 
+import '../../../sharedStyles/CommentField.css';
 import CommentInput from './CommentInput';
 import CommentItem from './CommentItem';
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 import '../../sharedStyles/PublicationList.css';
+import '../../sharedStyles/ProfilePage.css';
 
 const MyPublicationsPage = () => {
   const [publications, setPublications] = useState([]);

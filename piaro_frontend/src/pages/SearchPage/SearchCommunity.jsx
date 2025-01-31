@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../../sharedStyles/SearchPage.css'; // Import the CSS file
 
 const SearchCommunity = ({ query }) => {
   const [results, setResults] = useState([]);
@@ -29,7 +30,7 @@ const SearchCommunity = ({ query }) => {
   };
 
   return (
-    <div>
+    <div className="search-results-wrapper">
       <h2>Search Results for Communities</h2>
       {results.length > 0 ? (
         <ul>

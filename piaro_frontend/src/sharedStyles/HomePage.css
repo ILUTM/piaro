@@ -1,0 +1,46 @@
+.homepage-wrapper {
+    background-color: #ffffff; 
+    color: #2c3e50; /* Dark blue text */
+    padding: 20px;
+  }
+  
+  h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .publication-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .publications-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 800px;
+  }
+  
+  .publications-list li {
+    background-color: #ecf0f1; 
+    color: #2c3e50; 
+    border: 1px solid #cccccc;
+    border-radius: 10px; 
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s;
+  }
+  
+  .publications-list li:hover {
+    background-color: #dcdcdc;
+  }
+  
+  p {
+    color: #000000; 
+    text-align: center;
+  }
+  

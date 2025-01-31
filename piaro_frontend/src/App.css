@@ -1,62 +1,76 @@
-.App {
-  text-align: center;
-  display: grid; /* Use grid layout */
-  grid-template-areas: 
-    "header header"
-    "sidebar main";
-  grid-template-columns: 200px 1fr; /* Adjust sidebar width as needed */
-  grid-template-rows: auto 1fr; /* Header height is auto, main takes remaining space */
-  height: 100vh;
-  max-width: 100%; /* Full viewport height */
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh; /* This might need adjustment */
-  display: flex; /* Keep flex for header alignment */
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #1c1f2b;
   color: white;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.App {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: 250px 1fr 250px; /* Adjust for the right sidebar */
+  grid-template-areas:
+    "header header header"
+    "sidebar main-content right-sidebar";
+  height: 100vh;
 }
 
 .header {
   grid-area: header;
-  background-color: #f8f9fa;
+  background-color: #ffffff;
+  padding: 10px;
+  text-align: center;
+  font-size: 24px;
+  color: #2c3e50;
+  border-bottom: 1px solid #cccccc;
+  z-index: 1; /* Ensure the header stays on top */
+  position: fixed; /* Fix the header to the top */
+  width: 98%; /* Ensure the header spans the full width */
+  top: 0;
 }
 
 .sidebar {
   grid-area: sidebar;
-  background-color: #e9ecef; 
+  background-color: #f7f7f7; 
+  border-right: 1px solid #cccccc;
+  overflow-y: auto;
+  padding: 20px;
+  height: calc(100vh - 60px);
+  position: fixed;
+  top: 60px; /* Adjust based on header height */
+  left: 0;
+  z-index: 0; /* Ensure the sidebar doesn't overlap the header */
 }
 
 .main-content {
-  grid-area: main;
-  overflow-y: auto; 
-  padding: 20px; 
+  grid-area: main-content;
+  background-color: #ffffff;
+  color: #2c3e50;
+  padding: 20px;
+  overflow-y: auto;
+  margin-top: 60px; /* Adjust for fixed header height */
+  z-index: 0; /* Ensure proper stacking context */
+}
+
+.right-sidebar {
+  grid-area: right-sidebar;
+  background-color: #f7f7f7; /* Light grey to match the header */
+  border-left: 1px solid #cccccc; /* Light grey border to match the header */
+  overflow-y: auto;
+  padding: 20px;
+  height: calc(100vh - 60px); /* Adjust based on header height */
+  position: fixed;
+  top: 60px; /* Adjust based on header height */
+  right: 0;
+  z-index: 0; /* Ensure the sidebar doesn't overlap the header */
+}
+
+a {
+  color: #2c3e50; /* Dark blue */
+  text-decoration: none;
+}
+
+a:hover {
+  color: #92254a; /* Red */
 }

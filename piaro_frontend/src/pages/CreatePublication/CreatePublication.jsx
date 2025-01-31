@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import RichTextEditor from '../../components/RichTextEditor/RichTextEditor';
-import '../../sharedStyles/CreatePublication.css'; 
+import '../../sharedStyles/CreatePublication.css';
 
 const CreatePublication = () => {
   const location = useLocation();

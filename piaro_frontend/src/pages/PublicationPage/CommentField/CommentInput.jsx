@@ -1,4 +1,6 @@
 import React from 'react';
+import '../../../sharedStyles/CommentField.css';
+
 
 const CommentInput = ({handleAddComment, newComment, setNewComment, isAddingComment}) => {
 

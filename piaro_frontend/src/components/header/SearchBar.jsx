@@ -85,7 +85,7 @@ const SearchBar = () => {
                             placeholder="Enter hashtag"
                             className="new-hashtag-input"
                         />
-                        <button type="button" onClick={handleAddHashtag} className="add-hashtag-button">Add Hashtag</button>
+                        <button type="button" onClick={handleAddHashtag} className="add-hashtag-button">#</button>
                     </div>
                 </div>
             )}

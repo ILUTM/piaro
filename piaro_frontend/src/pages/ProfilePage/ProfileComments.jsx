@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import '../../sharedStyles/ProfilePage.css';
 
 const ProfileComments = () => {
   const [comments, setComments] = useState([]);

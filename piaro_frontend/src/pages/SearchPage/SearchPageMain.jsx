@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import SearchCommunity from './SearchCommunity';
 import SearchPublication from './SearchPublication';
+import '../../sharedStyles/SearchPage.css'; // Import the CSS file
 
 const SearchPageMain = () => {
   const [activeTab, setActiveTab] = useState('publications');
@@ -28,7 +29,7 @@ const SearchPageMain = () => {
   };
 
   return (
-    <div className="profile-container">
+    <div className="search-page-wrapper">
       <div className="tabs">
         <button onClick={() => setActiveTab('publications')}>Publications</button>
         <button onClick={() => setActiveTab('communities')}>Communities</button>

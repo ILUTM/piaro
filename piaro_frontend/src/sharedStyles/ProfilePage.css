@@ -1,0 +1,254 @@
+/* ProfileMain.css */
+
+/* General styles for the profile container */
+.profile-container {
+    background-color: #ffffff; /* White background */
+    color: #2c3e50; /* Dark blue text */
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+  }
+  
+  /* Styles for the tabs */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .tabs button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #3498db;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1em;
+    margin: 0 5px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .tabs button:hover {
+    background-color: #2980b9;
+  }
+  
+  .tabs button.active {
+    background-color: #2980b9; 
+  }
+  
+  /* Styles for the tab content */
+  .tab-content {
+    padding: 20px;
+    background-color: #ecf0f1; 
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+/* ProfilePage.css */
+
+.profile-container {
+    background-color: #f7f9fb; /* Light background */
+    color: #34495e; /* Dark blue text */
+    padding: 20px;
+    max-width: 800px;
+    margin: 20px auto; 
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+    font-family: 'Arial', sans-serif;
+  }
+  
+  .profile-header {
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #2c3e50;
+  }
+  
+  .error {
+    color: #e74c3c;
+    font-size: 1em;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .profile-photo {
+    display: block;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover; 
+    margin: 0 auto 10px;
+  }
+  
+  .no-photo {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 1.2em;
+  }
+  
+  .profile-photo-section {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .profile-photo-input {
+    display: none;
+  }
+  
+  .profile-photo-input-label {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  
+  .profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .profile-label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 1.2em;
+    color: #2c3e50;
+  }
+  
+  .profile-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+  }
+  
+  .update-button, .change-password-button {
+    padding: 10px 20px;
+    background-color: #2ecc71;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+    font-weight: bold;
+  }
+  
+  .update-button:hover, .change-password-button:hover {
+    background-color: #27ae60;
+  }
+  
+  .tg-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #3498db; 
+    color: #fff;
+    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 1em;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  
+  .tg-button:hover {
+    background-color: #2980b9;
+  }
+  
+  .password-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  /* Styles for the ProfilePublications tab */
+  .publications-container {
+    background-color: #ffffff; 
+    color: #2c3e50; 
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .publications-header {
+    text-align: center;
+    font-size: 2em;
+    margin-bottom: 20px;
+    color: #2c3e50;
+  }
+  
+  .publications-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .publications-list li {
+    background-color: #ecf0f1; 
+    color: #2c3e50; 
+    border: 1px solid #cccccc;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s;
+  }
+  
+  .publications-list li:hover {
+    background-color: #dcdcdc; 
+  }
+  
+  /* Styles for the ProfileLikes tab */
+  .likes-container {
+    background-color: #ffffff; 
+    color: #2c3e50; 
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .likes-header {
+    text-align: center;
+    font-size: 2em;
+    margin-bottom: 20px;
+    color: #2c3e50;
+  }
+  
+  .comments-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .comments-list li {
+    background-color: #ecf0f1; 
+    color: #2c3e50; 
+    border: 1px solid #cccccc; 
+    border-radius: 10px; 
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s;
+  }
+  
+  .comments-list li:hover {
+    background-color: #dcdcdc;
+  }
+  
+  .comments-list p {
+    margin: 5px 0;
+  }
+  

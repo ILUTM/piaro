@@ -1,0 +1,117 @@
+.user-container {
+    background-color: #ffffff; 
+    color: #2c3e50; 
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .user-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;  /* Make sure header spans the full width */
+    margin-bottom: 20px;
+  }
+  
+  .user-header div:first-child {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .user-container h2 {
+    font-size: 2em;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #2c3e50;
+  }
+  
+  .profile-photo-section {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .profile-photo {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+  }
+  
+  .no-photo {
+    font-size: 1.2em;
+    color: #7f8c8d; 
+  }
+  
+  .user-container p {
+    font-size: 1.2em;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .subscription-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-left: auto; /* Align buttons to the right */
+  }
+  
+  .subscription-buttons button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #3498db;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+  }
+  
+  .subscription-buttons button:hover {
+    background-color: #2980b9;
+  }
+  
+  .subscription-buttons button:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+  }
+  
+  .publication-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .publications-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    max-width: 800px;
+  }
+  
+  .publications-list li {
+    background-color: #ecf0f1; 
+    color: #2c3e50; 
+    border: 1px solid #cccccc; 
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s;
+  }
+  
+  .publications-list li:hover {
+    background-color: #dcdcdc; 
+  }
+  
+  .error {
+    color: #e74c3c;
+    font-size: 1em;
+    text-align: center;
+  }
+  

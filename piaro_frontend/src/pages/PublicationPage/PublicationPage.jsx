@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import CommentField from './CommentField/CommentField';
 import LikeComponent from '../../components/Like/LikeComponent';
 import { fetchContentTypeId } from '../../utils/ContentTypes';
+import '../../sharedStyles/PublicationPage.css'; 
 
 const PublicationPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [publication, setPublication] = useState(null);
   const [error, setError] = useState('');
   const [contentTypeId, setContentTypeId] = useState(null);
@@ -14,12 +16,19 @@ const PublicationPage = () => {
     fetchPublication();
   }, [id]);
 
-  useEffect(() => { 
-    const fetchContentType = async () => { 
-      const contentTypeId = await fetchContentTypeId('publication'); 
-      setContentTypeId(contentTypeId); }
-      ; fetchContentType(); 
-    }, []);
+  useEffect(() => {
+    const fetchContentType = async () => {
+      const contentTypeId = await fetchContentTypeId('publication');
+      setContentTypeId(contentTypeId);
+    };
+    fetchContentType();
+  }, []);
+
+  useEffect(() => {
+    if (publication) {
+      updateLastVisitedPublications(publication);
+    }
+  }, [publication]);
 
   const fetchPublication = () => {
     fetch(`http://127.0.0.1:8000/api/publications/${id}/get_publication/`, {
@@ -28,19 +37,25 @@ const PublicationPage = () => {
         'Content-Type': 'application/json',
       },
     })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      setPublication(data);
-    })
-    .catch(error => {
-      console.error('There was an error fetching the publication', error);
-      setError('Fetching publication failed. It will be repaired soon.');
-    });
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        setPublication(data);
+      })
+      .catch(error => {
+        console.error('There was an error fetching the publication', error);
+        setError('Fetching publication failed. It will be repaired soon.');
+      });
+  };
+
+  const updateLastVisitedPublications = (publication) => {
+    const storedVisited = JSON.parse(localStorage.getItem('lastVisitedPublications')) || [];
+    const updatedVisited = [publication, ...storedVisited.filter(pub => pub.id !== publication.id)].slice(0, 10);
+    localStorage.setItem('lastVisitedPublications', JSON.stringify(updatedVisited));
   };
 
   if (!publication) {
@@ -51,17 +66,27 @@ const PublicationPage = () => {
     return <p>{error}</p>;
   }
 
+  const handleCommunityClick = () => {
+    navigate(`/community/${publication.community}`);
+  };
+
   return (
-    <div>
-      <h2>{publication.title}</h2>
-      <ul>
+    <div className="publication-page-wrapper">
+      <h2 className="publication-title">{publication.title}</h2>
+      <p className="publication-community">
+        Community: 
+        <span className="clickable" onClick={handleCommunityClick}>
+          {publication.community_name}
+        </span>
+      </p>
+      <ul className="publication-details">
         <li key={publication.id}>
-          <p>{publication.author}</p>
-          <div dangerouslySetInnerHTML={{ __html: publication.content }} />
-          <p>{new Date(publication.date_posted).toLocaleString()}</p>
+          <p className="publication-author">Author: {publication.author}</p>
+          <div className="publication-content" dangerouslySetInnerHTML={{ __html: publication.content }} />
+          <p className="publication-date">Posted on: {new Date(publication.date_posted).toLocaleString()}</p>
         </li>
       </ul>
-      {contentTypeId && ( <LikeComponent contentType={contentTypeId} objectId={publication.id} /> )}
+      {contentTypeId && <LikeComponent contentType={contentTypeId} objectId={publication.id} />}
       <div className="comment-field-wrapper">
         <CommentField publicationId={id} />
       </div>

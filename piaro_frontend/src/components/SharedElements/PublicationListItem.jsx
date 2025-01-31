@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../sharedStyles/PublicationList.css';
 import LikeComponent from '../Like/LikeComponent'; 
@@ -10,8 +10,9 @@ const PublicationListItem = ({
   lastPublicationElementRef,
 }) => {
   const [showMore, setShowMore] = useState(false);
-  const [showAllHashtags, setShowAllHashtags] = useState(false);
   const [contentTypeId, setContentTypeId] = useState(null);
+  const [visibleHashtags, setVisibleHashtags] = useState([]);
+  const hashtagsContainerRef = useRef(null);
 
   const navigate = useNavigate();
 
@@ -23,8 +24,42 @@ const PublicationListItem = ({
     fetchContentType();
   }, []);
 
+  useEffect(() => {
+    if (hashtagsContainerRef.current) {
+      const hashtagElements = publication.hashtags.map((hashtag, index) => (
+        <li key={index} className="hashtag" onClick={() => handleHashtagClick(hashtag.name)}>
+          {hashtag.name}
+        </li>
+      ));
+      
+      const containerWidth = hashtagsContainerRef.current.offsetWidth;
+      let widthSum = 0;
+      const visible = [];
+      let showMoreNeeded = false;
+
+      for (let i = 0; i < hashtagElements.length; i++) {
+        widthSum += hashtagElements[i].offsetWidth;
+        if (widthSum + (i * 10) > containerWidth) {
+          showMoreNeeded = true;
+          visible.push(
+            <li key="show-more" className="hashtag" onClick={handleShowMore}>
+              Show more
+            </li>
+          );
+          break;
+        }
+        visible.push(hashtagElements[i]);
+      }
+
+      setVisibleHashtags(visible);
+
+      if (!showMoreNeeded) {
+        setVisibleHashtags(hashtagElements);
+      }
+    }
+  }, [publication.hashtags, showMore]);
+
   const handleShowMore = () => setShowMore(!showMore);
-  const handleShowAllHashtags = () => setShowAllHashtags(!showAllHashtags);
 
   const handleHashtagClick = (hashtag) => {
     navigate(`/search?hashtags=${hashtag}`);
@@ -65,26 +100,21 @@ const PublicationListItem = ({
           dangerouslySetInnerHTML={{ __html: publication.content }}
         />
         {publication.content.length > 500 && (
-          <button onClick={handleShowMore}>
+          <button className="show-more-button" onClick={handleShowMore}>
             {showMore ? 'Show Less' : 'Show More'}
           </button>
         )}
       </div>
 
       <div className="publication-footer">
-        {contentTypeId && ( <LikeComponent contentType={contentTypeId} objectId={publication.id} /> )}
-        <ul className="publication-hashtags">
-          {publication.hashtags.slice(0, showAllHashtags ? publication.hashtags.length : 2).map((hashtag, index) => (
-            <li key={index} className="hashtag" onClick={() => handleHashtagClick(hashtag.name)}>
-              {hashtag.name}
-            </li>
-          ))}
-          {publication.hashtags.length > 2 && (
-            <button onClick={handleShowAllHashtags}>
-              {showAllHashtags ? 'Show Less Hashtags' : 'See All Hashtags'}
-            </button>
-          )}
-        </ul>
+        <div className="like-container">
+          {contentTypeId && <LikeComponent contentType={contentTypeId} objectId={publication.id} /> }
+        </div>
+        <div className="publication-hashtags-container" ref={hashtagsContainerRef}>
+          <ul className="publication-hashtags">
+            {visibleHashtags}
+          </ul>
+        </div>
       </div>
     </li>
   );

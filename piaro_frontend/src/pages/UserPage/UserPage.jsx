@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 import { fetchContentType, subscribe, unsubscribe, checkSubscription, toggleNotifications } from '../../utils/subscriptionUtils';
+import '../../sharedStyles/UserPage.css';
+import defaultProfilePhoto from '../../static/default_profile_photo.png'; // Import the default profile photo
 
 const UserPage = () => {
   const { id } = useParams();
@@ -71,6 +73,7 @@ const UserPage = () => {
   const handleSubscribe = async () => {
     try {
       await subscribe(contentType, user.id);
+      setIsSubscribed(true);
       checkSubscriptionStatus();
     } catch (error) {
       console.error('There was an error subscribing to the user', error);
@@ -80,6 +83,7 @@ const UserPage = () => {
   const handleUnsubscribe = async () => {
     try {
       await unsubscribe(contentType, user.id);
+      setIsSubscribed(false);
       checkSubscriptionStatus();
     } catch (error) {
       console.error('There was an error unsubscribing from the user', error);
@@ -91,7 +95,7 @@ const UserPage = () => {
       const data = await toggleNotifications(contentType, user.id);
       setSendNotifications(data.send_notifications);
     } catch (error) {
-      console.error('There was an error toggling notifications:', error);
+      console.error('There was an error toggling notifications', error);
     }
   };
 
@@ -113,25 +117,29 @@ const UserPage = () => {
     <div className="user-container">
       {user ? (
         <>
-          <h2>{user.username}</h2>
-          <div className="profile-photo-section">
-            {user.profile_photo ? (
-              <img src={user.profile_photo} alt="Profile" className="profile-photo" />
-            ) : (
-              <p className="no-photo">No profile photo</p>
-            )}
-          </div>
-          <p>{user.tg_contact}</p>
-          {isSubscribed ? (
+          <div className="user-header">
             <div>
-              <button onClick={handleUnsubscribe}>Unsubscribe</button>
-              <button onClick={handleToggleNotifications}>
-                {sendNotifications ? 'Disable Notifications' : 'Enable Notifications'}
+              <h2>{user.username}</h2>
+              <div className="profile-photo-section">
+                <img
+                  src={user.profile_photo || defaultProfilePhoto} // Use default photo if profile photo is absent
+                  alt="Profile"
+                  className="profile-photo"
+                />
+              </div>
+              <p>{user.tg_contact}</p>
+            </div>
+            <div className="subscription-buttons">
+              {isSubscribed ? (
+                <button onClick={handleUnsubscribe}>Subscribed</button>
+              ) : (
+                <button onClick={handleSubscribe}>Subscribe</button>
+              )}
+              <button onClick={handleToggleNotifications} disabled={!isSubscribed}>
+                {sendNotifications ? 'Notifications On' : 'Notifications Off'}
               </button>
             </div>
-          ) : (
-            <button onClick={handleSubscribe}>Subscribe</button>
-          )}
+          </div>
           <h2>Publications</h2>
           <ul className="publications-list">
             {publications.map((publication, index) => (
@@ -145,7 +153,7 @@ const UserPage = () => {
           </ul>
         </>
       ) : (
-        <p>Loading user data...</p> // Loading state
+        <p>Loading user data...</p>
       )}
     </div>
   );

@@ -2,8 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
-import '../../sharedStyles/PublicationList.css'; 
-import '../../sharedStyles/SearchPage.css'; 
+import '../../sharedStyles/SearchPage.css'; // Import the CSS file
 
 const SearchPublication = ({ query, hashtags }) => {
   const [publications, setPublications] = useState([]);
@@ -67,10 +66,10 @@ const SearchPublication = ({ query, hashtags }) => {
 
   return (
     <div className="search-page-wrapper">
-      <div className="search-publications-wrapper">
+      <div className="search-results-wrapper">
         <h2>Search Results for Publications</h2>
         {publications.length > 0 ? (
-          <ul className="publications-list">
+          <ul>
             {publications.map((publication, index) => (
               <PublicationListItem
                 key={publication.id}
@@ -87,7 +86,7 @@ const SearchPublication = ({ query, hashtags }) => {
           <p>No results found.</p>
         )}
       </div>
-  </div>   
+    </div>   
   );
 };
 

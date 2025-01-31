@@ -4,7 +4,7 @@ import Register from '../Auth/Register';
 import { useAuth } from '../AuthContext/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from './SearchBar';
-import logo from '../../static/logo/OIG1.jpg'
+import logo from '../../static/logo/OIG1.jpg';
 import '../../sharedStyles/Header.css';
 
 const Header = () => {
@@ -13,26 +13,29 @@ const Header = () => {
   const { authUser, isLoggedIn, setAuthUser, setIsLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => { 
-    fetch('http://127.0.0.1:8000/api/logout/', { 
-      method: 'POST', 
-      headers: { 
-        'Authorization': `Bearer ${localStorage.getItem('token')}`, 
-        'Content-Type': 'application/json', 
-      } }) 
-    .then(response => { 
-      if (!response.ok) { 
-        throw new Error('Network response was not ok'); 
-      } 
-      localStorage.removeItem('token'); 
-      setAuthUser(null); setIsLoggedIn(false); 
-      navigate('/'); }) 
-    .catch(error => { 
-      console.error('There was an error logging out!', error); 
-    }); 
+  const handleLogout = () => {
+    fetch('http://127.0.0.1:8000/api/logout/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json',
+      }
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        localStorage.removeItem('token');
+        setAuthUser(null);
+        setIsLoggedIn(false);
+        navigate('/');
+      })
+      .catch(error => {
+        console.error('There was an error logging out!', error);
+      });
   };
-  
-    const handleProfileClick = () => {
+
+  const handleProfileClick = () => {
     navigate('/profile');
   };
 
@@ -42,9 +45,12 @@ const Header = () => {
 
   return (
     <header className="header">
-      <img src={logo} alt="Piaro Logo" className="logo" onClick={handleLogoClick} />
+      <div className="logo-container">
+        <img src={logo} alt="Piaro Logo" className="logo" onClick={handleLogoClick} />
+        <span className="logo-text">Piaro</span>
+      </div>
       <div className="search-container">
-        <SearchBar className="search-bar"/>
+        <SearchBar className="search-bar" />
       </div>
       <div className="auth-buttons" role="button">
         {isLoggedIn ? (

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import CommentInput from './CommentInput';
 import LikeComponent from '../../../components/Like/LikeComponent';
 import { fetchContentTypeId } from '../../../utils/ContentTypes';
+import '../../../sharedStyles/CommentField.css';
+
 
 const CommentItem = ({ comment, handleReply, replyTo }) => {
   const [replyComment, setReplyComment] = useState('');

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../components/AuthContext/AuthContext';
 import default_profile_photo from '../../static/default_profile_photo.png'
+import '../../sharedStyles/ProfilePage.css';
 
 const ProfilePage = () => {
   const { authUser, setAuthUser } = useAuth();

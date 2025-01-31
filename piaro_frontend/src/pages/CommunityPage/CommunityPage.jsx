@@ -3,11 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 import { fetchContentType, subscribe, unsubscribe, checkSubscription, toggleNotifications } from '../../utils/subscriptionUtils';
+import '../../sharedStyles/CommunityPage.css';
 
 const CommunityPage = () => {
   const { id } = useParams();
   const [community, setCommunity] = useState(null);
   const [publications, setPublications] = useState([]);
+  const [error, setError] = useState('');
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
@@ -72,6 +74,7 @@ const CommunityPage = () => {
   const handleSubscribe = async () => {
     try {
       await subscribe(contentType, community.id);
+      setIsSubscribed(true);
       checkSubscriptionStatus();
     } catch (error) {
       console.error('There was an error subscribing to the community', error);
@@ -81,6 +84,7 @@ const CommunityPage = () => {
   const handleUnsubscribe = async () => {
     try {
       await unsubscribe(contentType, community.id);
+      setIsSubscribed(false);
       checkSubscriptionStatus();
     } catch (error) {
       console.error('There was an error unsubscribing from the community', error);
@@ -92,7 +96,7 @@ const CommunityPage = () => {
       const data = await toggleNotifications(contentType, community.id);
       setSendNotifications(data.send_notifications);
     } catch (error) {
-      console.error('There was an error toggling notifications:', error);
+      console.error('There was an error toggling notifications', error);
     }
   };
 
@@ -115,28 +119,32 @@ const CommunityPage = () => {
   }, [community, contentType, checkSubscriptionStatus]);
 
   return (
-    <div>
+    <div className="community-page-wrapper">
       {community ? (
-        <div>
-          <h2>{community.name}</h2>
-          <img src={community.photo} alt={`${community.name}`} />
-          <p>{community.description}</p>
-          {isSubscribed ? (
-            <div>
-              <button onClick={handleUnsubscribe}>Unsubscribe</button>
-              <button onClick={handleToggleNotifications}> 
-                {sendNotifications ? 'Disable Notifications' : 'Enable Notifications'} 
+        <>
+          <img src={community.photo} alt={`${community.name}`} className="community-photo" />
+          <div className="community-header">
+            <h2>{community.name}</h2>
+            <div className="subscription-buttons">
+              {isSubscribed ? (
+                <button onClick={handleUnsubscribe}>Subscribed</button>
+              ) : (
+                <button onClick={handleSubscribe}>Subscribe</button>
+              )}
+              <button onClick={handleToggleNotifications} disabled={!isSubscribed}>
+                {sendNotifications ? 'Notifications On' : 'Notifications Off'}
               </button>
             </div>
-          ) : (
-            <button onClick={handleSubscribe}>Subscribe</button>
-          )}
-        </div>
+          </div>
+          <p>{community.description}</p>
+        </>
       ) : (
         <p>Loading community details...</p>
       )}
-      <button onClick={navigateToCreatePublication}>Create New Publication</button>
+      <button className="create-publication-button" onClick={navigateToCreatePublication}>Create New Publication</button>
       <h2>Publications in Community</h2>
+      {error && <p>{error}</p>}
+      <div className="publication-list-wrapper">
         <ul className="publications-list">
           {publications.map((publication, index) => (
             <PublicationListItem
@@ -147,10 +155,9 @@ const CommunityPage = () => {
             />
           ))}
         </ul>
+      </div>
     </div>
   );
 };
 
 export default CommunityPage;
-
-

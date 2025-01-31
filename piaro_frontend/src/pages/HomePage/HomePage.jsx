@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
-import '../../sharedStyles/PublicationList.css'; 
 import '../../sharedStyles/HomePage.css';
 
 const HomePage = () => {

@@ -4,7 +4,7 @@ import ProfileCommunities from './ProfileCommunities';
 import ProfilePublications from './ProfilePublications';
 import ProfileComments from './ProfileComments';
 import ProfileLikes from './ProfileLikes';
-import '../../sharedStyles/ProfileMain.css'; 
+import '../../sharedStyles/ProfilePage.css'; 
 
 const ProfileMain = () => {
   const [activeTab, setActiveTab] = useState('profile');

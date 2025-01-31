@@ -1,0 +1,34 @@
+.right-sidebar {
+  background-color: #f7f7f7;
+  border-left: 1px solid #cccccc;
+  overflow-y: auto;
+  padding: 20px;
+  height: calc(100vh - 60px); 
+  position: fixed;
+  top: 60px; 
+  right: 0;
+  z-index: 0;
+}
+
+.right-sidebar h3 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+}
+
+.right-sidebar ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.right-sidebar li {
+  margin-bottom: 10px;
+}
+
+.right-sidebar a {
+  text-decoration: none;
+  color: #3498db;
+}
+
+.right-sidebar a:hover {
+  text-decoration: underline;
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../../sharedStyles/ProfilePage.css';
 
 const ProfileCommunities = () => {
   const [communities, setCommunities] = useState([]);

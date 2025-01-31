@@ -1,74 +1,65 @@
-/* CreatePublication.css */
 .create-publication-container {
-    max-width: 600px; /* Limit the width of the form */
-    margin: 20px auto; /* Center the container */
-    padding: 20px; /* Add some padding */
-    border: 1px solid #ccc; /* Light border for the container */
-    border-radius: 8px; /* Rounded corners */
-    background-color: #f9f9f9; /* Light background color */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
+    background-color: #ffffff;
+    color: #2c3e50;
+    padding: 20px;
+    max-width: 800px;
+    margin: 20px auto;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    font-family: 'Arial', sans-serif;
   }
   
-  h2 {
-    text-align: center; /* Center the heading */
-    margin-bottom: 20px; /* Space below the heading */
-    color: #333; /* Darker text color */
+  .create-publication-container h2 {
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #2c3e50;
   }
   
   .error {
-    color: red; /* Error message color */
-    text-align: center; /* Center the error message */
-    margin-bottom: 15px; /* Space below the error message */
+    color: #e74c3c;
+    font-size: 1em;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .create-publication-container p {
+    text-align: center;
+    color: #7f8c8d;
+    margin-bottom: 20px;
   }
   
   .create-publication-form {
-    display: flex; /* Use flexbox for form layout */
-    flex-direction: column; /* Stack form elements vertically */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
   }
   
-  .form-input, .form-select {
-    margin-bottom: 15px; /* Space between inputs */
-    padding: 10px; /* Padding inside the inputs */
-    border: 1px solid #ccc; /* Border for inputs */
-    border-radius: 4px; /* Rounded corners */
-    font-size: 16px; /* Font size */
+  .form-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
   }
   
-  .form-input:focus, .form-select:focus {
-    border-color: #007bff; /* Change border color on focus */
-    outline: none; /* Remove default outline */
+  .text-editor {
+    margin: 20px 0;
   }
   
   .form-button {
-    padding: 10px; /* Padding for the button */
-    background-color: #007bff; /* Button background color */
-    color: white; /* Button text color */
-    border: none; /* Remove border */
-    border-radius: 4px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor on hover */
-    font-size: 16px; /* Font size */
+    padding: 10px 20px;
+    background-color: #2ecc71;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+    font-weight: bold;
   }
   
   .form-button:hover {
-    background-color: #0056b3; /* Darker shade on hover */
+    background-color: #27ae60;
   }
   
-  /* Rich Text Editor Styles */
-  .text-editor {
-    margin-bottom: 20px; /* Space below the editor */
-  }
-  
-  .text-editor .ql-editor {
-    min-height: 200px; /* Minimum height for the editor */
-    border: 1px solid #ccc; /* Border for the editor */
-    border-radius: 4px; /* Rounded corners */
-  }
-  
-  .text-editor .ql-toolbar {
-    border: 1px solid #ccc; /* Border for the toolbar */
-    border-radius: 4px 4px 0 0; /* Rounded top corners */
-  }
-  
-  .text-editor .ql-toolbar.ql-snow {
-    background: #f9f9f9; /* Toolbar background color */
-  }
