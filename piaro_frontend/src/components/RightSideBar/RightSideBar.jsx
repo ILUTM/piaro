@@ -1,4 +1,3 @@
-// RightSidebar.js
 import React, { useEffect, useState } from 'react';
 import '../../sharedStyles/RightSideBar.css';
 
@@ -7,7 +6,7 @@ const RightSidebar = () => {
 
   useEffect(() => {
     const storedVisited = JSON.parse(localStorage.getItem('lastVisitedPublications')) || [];
-    setLastVisited(storedVisited.slice(0, 10));
+    setLastVisited(storedVisited);
   }, []);
 
   return (

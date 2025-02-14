@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 import { fetchContentType, subscribe, unsubscribe, checkSubscription, toggleNotifications } from '../../utils/subscriptionUtils';
-import '../../sharedStyles/CommunityPage.css';
+import '../../sharedStyles/PageCommonStyle.css';
+import '../../sharedStyles/CommunityPage.css'; 
 
 const CommunityPage = () => {
   const { id } = useParams();
@@ -119,7 +120,7 @@ const CommunityPage = () => {
   }, [community, contentType, checkSubscriptionStatus]);
 
   return (
-    <div className="community-page-wrapper">
+    <div className="page-wrapper">
       {community ? (
         <>
           <img src={community.photo} alt={`${community.name}`} className="community-photo" />
@@ -143,7 +144,7 @@ const CommunityPage = () => {
       )}
       <button className="create-publication-button" onClick={navigateToCreatePublication}>Create New Publication</button>
       <h2>Publications in Community</h2>
-      {error && <p>{error}</p>}
+      {error && <p className="error">{error}</p>}
       <div className="publication-list-wrapper">
         <ul className="publications-list">
           {publications.map((publication, index) => (

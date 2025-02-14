@@ -84,7 +84,7 @@ class Hashtag(models.Model):
 
 
 class Community(models.Model):
-    creator = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=50, unique=True)
     photo = models.ImageField(upload_to=UploadToCommunityDirectory(), null=True, blank=True)
     description = models.TextField()
@@ -100,12 +100,12 @@ class Community(models.Model):
 
 class Publication(models.Model):
     title = models.CharField(max_length=200)
-    author = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
     date_posted = models.DateTimeField(auto_now_add=True)
     content = models.TextField()
     hashtags = models.ManyToManyField(Hashtag, blank=True)
     date_written = models.DateField(null=True, blank=True)
-    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='publications', null=True)
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='publications', null=False)
 
     class Meta:
         ordering = ['-date_posted']
@@ -115,8 +115,8 @@ class Publication(models.Model):
 
 class Comment(models.Model):
     text = models.TextField()
-    author = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, null=True, blank=True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
     parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
     date_posted = models.DateTimeField(auto_now_add=True)
 
@@ -128,7 +128,7 @@ class Comment(models.Model):
 
 
 class Subscription(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
     #stores data about and object user subscribed on. If user subscribed on community {'content_type':'community'}, if on user {'content_type':'user'}
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True)
     object_id = models.PositiveIntegerField()
@@ -147,7 +147,7 @@ class Like(models.Model):
         (DISLIKE, 'Dislike'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
@@ -159,9 +159,9 @@ class Like(models.Model):
 
 
 class Collection(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='collections')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='collections', null=False)
     name = models.CharField(max_length=200)
-    publications = models.ManyToManyField(Publication, related_name='collections')
+    publications = models.ManyToManyField(Publication, related_name='collections', blank=True)
     is_public = models.BooleanField(default=False)
 
     def __str__(self):

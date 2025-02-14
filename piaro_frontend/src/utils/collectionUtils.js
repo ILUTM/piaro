@@ -1,127 +1,114 @@
-const apiUrl = 'http://127.0.0.1:8000/api/collections';
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
-export const fetchCollections = async (endpoint, token) => {
-  try {
-    const response = await fetch(`${apiUrl}/${endpoint}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
+export const fetchMyCollections = async (token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/collections/my_collections/`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('There was an error fetching the collections!', error);
+        throw error;
     }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`There was an error fetching collections:`, error);
-    throw error;
-  }
 };
 
-export const createCollection = async (name, isPublic, token) => {
-  try {
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name, is_public: isPublic }),
-    });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
+export const createCollection = async (token, collectionData) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/collections/create_collection/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(collectionData),
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('There was an error creating the collection!', error);
+        throw error;
     }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('There was an error creating the collection:', error);
-    throw error;
-  }
 };
 
-export const toggleVisibility = async (collectionId, token) => {
-  try {
-    const response = await fetch(`${apiUrl}/${collectionId}/toggle_visibility/`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
+export const toggleCollectionVisibility = async (token, collectionId) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/collections/${collectionId}/toggle_visibility/`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('There was an error toggling the collection visibility!', error);
+        throw error;
     }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('There was an error toggling visibility:', error);
-    throw error;
-  }
 };
 
-export const addPublicationToCollection = async (collectionId, publicationId, token) => {
-  try {
-    const response = await fetch(`${apiUrl}/${collectionId}/add_publication/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify({ publication_id: publicationId }),
-    });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
+export const addPublicationToCollection = async (token, collectionId, publicationId) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/collections/${collectionId}/add_publication/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ publication_id: publicationId }),
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('There was an error adding the publication to the collection!', error);
+        throw error;
     }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('There was an error adding publication to the collection:', error);
-    throw error;
-  }
 };
 
-export const viewPublicCollection = async (collectionId, token = null) => {
-  try {
-    const headers = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+export const viewPublicCollection = async (collectionId) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/collections/${collectionId}/view_public/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('There was an error viewing the public collection!', error);
+        throw error;
     }
-    
-    const response = await fetch(`${apiUrl}/${collectionId}/view_public/`, {
-      method: 'GET',
-      headers,
-    });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('There was an error viewing the collection:', error);
-    throw error;
-  }
 };
 
-export const copyCollection = async (collectionId, token) => {
-  try {
-    const response = await fetch(`${apiUrl}/${collectionId}/copy_collection/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
+export const copyCollection = async (token, collectionId) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/collections/${collectionId}/copy_collection/`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('There was an error copying the collection!', error);
+        throw error;
     }
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('There was an error copying the collection:', error);
-    throw error;
-  }
 };

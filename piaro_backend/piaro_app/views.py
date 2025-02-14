@@ -1,5 +1,4 @@
 from django.db import transaction
-#allow me to create complex queries to ORM
 from django.db.models import Q
 import requests
 from django.contrib.auth import authenticate, login, logout
@@ -13,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.exceptions import TokenError 
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -195,21 +195,27 @@ class LogoutViewSet(viewsets.ViewSet):
     def create(self, request, *args, **kwargs):
         try:
             refresh_token = request.COOKIES.get('refresh_token')
+
             if refresh_token:
-                token = RefreshToken(refresh_token)
-                token.blacklist()
+                try:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+                except TokenError as e:
+                    print(f"Token error: {e}")  # Debugging
+                    if "Token is blacklisted" not in str(e):
+                        return Response({"detail": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
 
             logout(request)
-            
+
             response = Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
-            # Explicitly delete the cookie
-            
-            response.delete_cookie('refresh_token', domain='127.0.0.1', samesite='Lax')
-            print('i break here')
+            response.delete_cookie(
+                'refresh_token',
+                path='/',
+                domain='127.0.0.1',  # Ensure this matches the domain used when setting the cookie
+            )
             return response
         except Exception as e:
             return Response({"detail": "Something went wrong during logout."}, status=status.HTTP_400_BAD_REQUEST)
-
 # END OF BLOCK OF USER VIEWSETS
 #=====================================================================
 
@@ -527,6 +533,9 @@ class LikeViewSet(viewsets.ModelViewSet):
         if not content_type or not object_id or not action:
             return Response({"error": "content_type, object_id, and action are required parameters"}, status=status.HTTP_400_BAD_REQUEST)
         
+        if action not in ["like", "dislike"]:
+            return Response({"error": "action must be either 'like' or 'dislike'"}, status=status.HTTP_400_BAD_REQUEST)
+        
         try:
             content_type_obj = ContentType.objects.get(pk=content_type)
         except ContentType.DoesNotExist:
@@ -564,23 +573,16 @@ class LikeViewSet(viewsets.ModelViewSet):
         combined_likes = list(publication_likes) + list(comment_likes)
         serializer = self.get_serializer(combined_likes, many=True)
         return Response(serializer.data)
-            
-            
-            
-            
+
+
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
     serializer_class = CollectionSerializer
-    
-    def get_queryset(self):
-        user = self.request.user
-        if user.is_authenticated:
-            return Collection.objects.filter(user=user)
-        return Collection.objects.none()
-    
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-    
+
     @action(detail=True, methods=['patch'])
     def toggle_visibility(self, request, pk=None):
         collection = self.get_object()
@@ -599,7 +601,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
         publication = get_object_or_404(Publication, id=publication_id)
         collection.publications.add(publication)
         return Response({'status': 'publication added'})
-    
+
     @action(detail=True, methods=['get'])
     def view_public(self, request, pk=None):
         collection = self.get_object()
@@ -608,7 +610,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         else:
             return Response({'error': 'This collection is private.'}, status=status.HTTP_403_FORBIDDEN)
-        
+
     @action(detail=True, methods=['post'])
     def copy_collection(self, request, pk=None):
         original_collection = self.get_object()
@@ -622,3 +624,26 @@ class CollectionViewSet(viewsets.ModelViewSet):
         new_collection.publications.set(original_collection.publications.all())
         new_collection.save()
         return Response({'status': 'collection copied', 'collection': CollectionSerializer(new_collection).data})
+
+    @action(detail=False, methods=['post'])
+    def create_collection(self, request):
+        print(request.data)
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=self.request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def my_collections(self, request):
+        user = self.request.user
+        collections = Collection.objects.filter(user=user)
+        serializer = self.get_serializer(collections, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'])
+    def get_collection(self, request, pk=None):
+        publication = get_object_or_404(Collection, pk=pk)
+        serializer = self.get_serializer(publication)
+        return Response(serializer.data)

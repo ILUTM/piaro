@@ -1,7 +1,6 @@
-// Register.js
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
-import styles from '../../sharedStyles/Auth.module.css'; // Importing CSS Module
+import styles from '../../sharedStyles/Auth.module.css';
 
 const Register = ({ onClose }) => {
   const [username, setUsername] = useState('');

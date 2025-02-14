@@ -10,31 +10,13 @@ import '../../sharedStyles/Header.css';
 const Header = () => {
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
-  const { authUser, isLoggedIn, setAuthUser, setIsLoggedIn } = useAuth();
+  const { authUser, isLoggedIn, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    fetch('http://127.0.0.1:8000/api/logout/', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-      }
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        localStorage.removeItem('token');
-        setAuthUser(null);
-        setIsLoggedIn(false);
-        navigate('/');
-      })
-      .catch(error => {
-        console.error('There was an error logging out!', error);
-      });
+    logout(); 
+    navigate('/'); 
   };
-
   const handleProfileClick = () => {
     navigate('/profile');
   };
@@ -55,13 +37,13 @@ const Header = () => {
       <div className="auth-buttons" role="button">
         {isLoggedIn ? (
           <>
-            <button onClick={handleProfileClick}>{authUser.username}</button>
-            <button onClick={handleLogout}>Logout</button>
+            <button onClick={handleProfileClick} aria-label="Profile">{authUser.username}</button>
+            <button onClick={handleLogout} aria-label="Logout">Logout</button>
           </>
         ) : (
           <>
-            <button onClick={() => setShowLogin(true)}>Login</button>
-            <button onClick={() => setShowRegister(true)}>Register</button>
+            <button onClick={() => setShowLogin(true)} aria-label="Login">Login</button>
+            <button onClick={() => setShowRegister(true)} aria-label="Register"> Register</button>
           </>
         )}
       </div>

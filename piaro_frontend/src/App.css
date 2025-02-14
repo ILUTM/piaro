@@ -1,76 +1,71 @@
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #1c1f2b;
-  color: white;
-  overflow-x: hidden; /* Prevent horizontal scroll */
+:root {
+  --header-height: 80px;
+  --sidebar-width: 250px;
+  --background-color: #f7f7f7;
+  --border-color: #cccccc;
+  --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .App {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  grid-template-columns: 250px 1fr 250px; /* Adjust for the right sidebar */
-  grid-template-areas:
-    "header header header"
-    "sidebar main-content right-sidebar";
-  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
 }
 
 .header {
-  grid-area: header;
-  background-color: #ffffff;
-  padding: 10px;
-  text-align: center;
-  font-size: 24px;
-  color: #2c3e50;
-  border-bottom: 1px solid #cccccc;
-  z-index: 1; /* Ensure the header stays on top */
-  position: fixed; /* Fix the header to the top */
-  width: 98%; /* Ensure the header spans the full width */
+  z-index: 100;
+  margin: 0;
+  padding: 5px;
+  position: sticky;
   top: 0;
-}
-
-.sidebar {
-  grid-area: sidebar;
-  background-color: #f7f7f7; 
-  border-right: 1px solid #cccccc;
-  overflow-y: auto;
-  padding: 20px;
-  height: calc(100vh - 60px);
-  position: fixed;
-  top: 60px; /* Adjust based on header height */
-  left: 0;
-  z-index: 0; /* Ensure the sidebar doesn't overlap the header */
+  width: 100%;
+  height: var(--header-height); /* Uses CSS variable */
+  background-color: #fff;
+  box-shadow: var(--shadow);
+  box-sizing: border-box;
 }
 
 .main-content {
-  grid-area: main-content;
-  background-color: #ffffff;
-  color: #2c3e50;
+  flex-grow: 1;
   padding: 20px;
-  overflow-y: auto;
-  margin-top: 60px; /* Adjust for fixed header height */
-  z-index: 0; /* Ensure proper stacking context */
+  margin-left: var(--sidebar-width);
+  margin-right: var(--sidebar-width);
 }
 
 .right-sidebar {
-  grid-area: right-sidebar;
-  background-color: #f7f7f7; /* Light grey to match the header */
-  border-left: 1px solid #cccccc; /* Light grey border to match the header */
-  overflow-y: auto;
-  padding: 20px;
-  height: calc(100vh - 60px); /* Adjust based on header height */
+  z-index: 5;
   position: fixed;
-  top: 60px; /* Adjust based on header height */
-  right: 0;
-  z-index: 0; /* Ensure the sidebar doesn't overlap the header */
+  right: 0; 
+  top: var(--header-height); 
+  height: calc(100vh - var(--header-height)); 
+  width: var(--sidebar-width);
+  background-color: var(--background-color);
+  border-left: 1px solid var(--border-color);
+  padding: 20px;
+  overflow-y: auto;
 }
 
-a {
-  color: #2c3e50; /* Dark blue */
-  text-decoration: none;
+.sidebar {
+  z-index: 5;
+  position: fixed; 
+  top: var(--header-height);
+  left: 0;
+  height: calc(100vh - var(--header-height)); 
+  width: var(--sidebar-width);
+  background-color: var(--background-color);
+  border-right: 1px solid var(--border-color);
+  padding: 20px;
+  overflow-y: auto;
 }
 
-a:hover {
-  color: #92254a; /* Red */
+@media (max-width: 768px) {
+  .sidebar,
+  .right-sidebar {
+    display: none;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
 }

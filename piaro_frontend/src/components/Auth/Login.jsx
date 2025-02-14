@@ -1,7 +1,6 @@
-// Login.js
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
-import styles from '../../sharedStyles/Auth.module.css'; // Importing CSS Module
+import styles from '../../sharedStyles/Auth.module.css'; 
 import { useAuth } from '../AuthContext/AuthContext';
 
 const Login = ({ onClose }) => {

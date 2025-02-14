@@ -1,69 +1,29 @@
-.search-page-wrapper {
-    background-color: #ffffff;
-    color: #2c3e50;
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  .tabs {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-  
-  .tabs button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #3498db;
-    color: #fff;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.3s ease;
-    margin: 0 10px;
-  }
-  
-  .tabs button:hover {
-    background-color: #2980b9;
-  }
-  
-  .tab-content {
-    padding: 20px;
-  }
-  
-  .search-results-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .search-results-wrapper h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  
-  .search-results-wrapper ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    max-width: 800px;
-  }
-  
-  .search-results-wrapper li {
-    background-color: #ecf0f1;
-    color: #2c3e50; 
-    border: 1px solid #cccccc;
-    border-radius: 10px; 
-    padding: 20px;
-    margin-bottom: 20px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .search-results-wrapper li:hover {
-    background-color: #dcdcdc; 
-  }
-  
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.tabs button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #3498db;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+  margin: 0 10px;
+}
+
+.tabs button.active {
+  background-color: #2980b9;
+}
+
+.tabs button:hover {
+  background-color: #2980b9;
+}
+
+.tab-content {
+  padding: 20px;
+}

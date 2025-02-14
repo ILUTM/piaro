@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('__all__')
+        fields = ('id', 'username', 'email', 'contact_number', 'tg_contact', 'profile_photo')
         ref_name = 'Custom User'
 
 
@@ -58,7 +58,7 @@ class LoginSerializer(serializers.Serializer):
 class HashtagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hashtag
-        fields = '__all__'
+        fields = ('id', 'name')
 
 
 class CommunitySerializer(serializers.ModelSerializer):
@@ -66,7 +66,7 @@ class CommunitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Community
-        fields = '__all__'
+        fields = ('id', 'creator', 'name', 'photo', 'description')
 
 
 class PublicationSerializer(serializers.ModelSerializer):
@@ -79,7 +79,7 @@ class PublicationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Publication
-        fields = '__all__'
+        fields = ('id', 'title', 'author', 'author_id', 'date_posted', 'content', 'hashtags', 'community', 'community_name', 'date_written')
     
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -92,7 +92,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = '__all__'
+        fields = ('id', 'text', 'author', 'publication', 'parent_comment', 'date_posted', 'replies')
 
     def get_replies(self, obj):
         if obj.replies.exists():
@@ -105,7 +105,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subscription
-        fields = '__all__'
+        fields = ('id', 'user', 'content_type', 'object_id', 'send_notifications')
 
     def create(self, validated_data):
         content_type = validated_data.pop('content_type')
@@ -119,10 +119,12 @@ class LikeSerializer(serializers.ModelSerializer):
     
     class Meta: 
         model = Like 
-        fields = '__all__'
+        fields = ('id', 'user', 'content_type', 'object_id', 'is_like', 'date_modified')
         
         
 class CollectionSerializer(serializers.ModelSerializer): 
+    user = serializers.ReadOnlyField(source='user.username')
+    publications = PublicationSerializer(many=True, read_only=True)
     class Meta: 
         model = Collection 
-        fields = '__all__'
+        fields = ('id', 'user', 'name', 'publications', 'is_public')

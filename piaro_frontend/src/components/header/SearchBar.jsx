@@ -19,6 +19,8 @@ const SearchBar = () => {
         if (newHashtag && !hashtags.includes(newHashtag)) {
             setHashtags([...hashtags, newHashtag]);
             setNewHashtag('');
+        } else {
+            alert('invalid hashtag');
         }
     };
 
@@ -76,7 +78,7 @@ const SearchBar = () => {
             {showHashtagModal && (
                 <div className="modal">
                     <div className="modal-content" ref={modalRef}>
-                        <span className="close" onClick={handleCloseModal}>×</span>
+                        <span className="close" onClick={handleCloseModal} aria-label="Close modal">×</span>
                         <h2>Add Hashtag</h2>
                         <input
                             type="text"

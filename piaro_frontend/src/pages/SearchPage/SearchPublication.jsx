@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
-import '../../sharedStyles/SearchPage.css'; // Import the CSS file
+import '../../sharedStyles/PageCommonStyle.css';
 
 const SearchPublication = ({ query, hashtags }) => {
   const [publications, setPublications] = useState([]);
@@ -50,7 +50,7 @@ const SearchPublication = ({ query, hashtags }) => {
     if (pageNumber > 1) {
       fetchPublications(pageNumber);
     }
-  }, [pageNumber, fetchPublications])
+  }, [pageNumber, fetchPublications]);
 
   const handlePublicationClick = (id) => {
     navigate(`/Publication/${id}`);
@@ -65,11 +65,11 @@ const SearchPublication = ({ query, hashtags }) => {
   };
 
   return (
-    <div className="search-page-wrapper">
-      <div className="search-results-wrapper">
+    <div className="page-wrapper">
+      <div className="publication-list-wrapper">
         <h2>Search Results for Publications</h2>
         {publications.length > 0 ? (
-          <ul>
+          <ul className="publications-list">
             {publications.map((publication, index) => (
               <PublicationListItem
                 key={publication.id}

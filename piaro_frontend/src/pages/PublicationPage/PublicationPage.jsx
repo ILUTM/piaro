@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import CommentField from './CommentField/CommentField';
 import LikeComponent from '../../components/Like/LikeComponent';
 import { fetchContentTypeId } from '../../utils/ContentTypes';
-import '../../sharedStyles/PublicationPage.css'; 
+import '../../sharedStyles/PublicationPage.css';
 
 const PublicationPage = () => {
   const { id } = useParams();
@@ -24,12 +24,6 @@ const PublicationPage = () => {
     fetchContentType();
   }, []);
 
-  useEffect(() => {
-    if (publication) {
-      updateLastVisitedPublications(publication);
-    }
-  }, [publication]);
-
   const fetchPublication = () => {
     fetch(`http://127.0.0.1:8000/api/publications/${id}/get_publication/`, {
       method: 'GET',
@@ -45,6 +39,7 @@ const PublicationPage = () => {
       })
       .then(data => {
         setPublication(data);
+        updateLastVisitedPublications(data); 
       })
       .catch(error => {
         console.error('There was an error fetching the publication', error);

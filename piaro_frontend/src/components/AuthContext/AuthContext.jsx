@@ -27,8 +27,7 @@ export function AuthProvider({ children }) {
                 setIsLoggedIn(true);
                 localStorage.setItem('token', data.access);
             } else {
-                setAuthUser(null);
-                setIsLoggedIn(false);
+                logout(); 
             }
         } catch (error) {
             console.error('Authentication check error:', error);
@@ -36,18 +35,38 @@ export function AuthProvider({ children }) {
             setIsLoggedIn(false);
         }
     };
-     
-    useEffect(() => {
-        // Optional: You might want to remove this if you don't need Local Storage persistence
-        localStorage.setItem('authUser', JSON.stringify(authUser));
-        localStorage.setItem('isLoggedIn', JSON.stringify(isLoggedIn));
-    }, [authUser, isLoggedIn]);
+
+    const login = (userData) => {
+        setAuthUser(userData);
+        setIsLoggedIn(true);
+        localStorage.setItem('token', userData.access); // Store the token
+    };
+
+    const logout = async () => {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/logout/', {
+                method: 'POST',
+                credentials: 'include',
+            });
+
+            if (response.ok) {
+                setAuthUser(null);
+                setIsLoggedIn(false);
+            } else {
+                console.error('Logout failed');
+            } 
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    };
 
     const value = {
         authUser,
         setAuthUser,
         isLoggedIn,
-        setIsLoggedIn
+        setIsLoggedIn,
+        login,
+        logout,
     };
 
     return (

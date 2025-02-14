@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import '../../sharedStyles/PublicationList.css';
 import LikeComponent from '../Like/LikeComponent'; 
 import { fetchContentTypeId } from '../../utils/ContentTypes';  // A utility to fetch content type IDs
+import { fetchMyCollections } from '../../utils/collectionUtils'; // Import the fetchCollections utility
+import AddToCollectionModal from './AddToCollectionModal'; 
 
 const PublicationListItem = ({
   publication,
@@ -12,6 +14,8 @@ const PublicationListItem = ({
   const [showMore, setShowMore] = useState(false);
   const [contentTypeId, setContentTypeId] = useState(null);
   const [visibleHashtags, setVisibleHashtags] = useState([]);
+  const [isAddingToCollection, setIsAddingToCollection] = useState(false); // State to manage Add to Collection modal visibility
+  const [userCollections, setUserCollections] = useState([]); // State to store user's collections
   const hashtagsContainerRef = useRef(null);
 
   const navigate = useNavigate();
@@ -77,6 +81,17 @@ const PublicationListItem = ({
     navigate(`/community/${id}`);
   };
 
+  const handleAddToCollection = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const collections = await fetchMyCollections(token);
+      setUserCollections(collections);
+      setIsAddingToCollection(true);
+    } catch (error) {
+      console.error('Error fetching user collections:', error);
+    }
+  };
+
   return (
     <li ref={lastPublicationElementRef} key={publication.id} className="publication-container">
       <div className="publication-header">
@@ -110,12 +125,21 @@ const PublicationListItem = ({
         <div className="like-container">
           {contentTypeId && <LikeComponent contentType={contentTypeId} objectId={publication.id} /> }
         </div>
+        <button onClick={handleAddToCollection}>Add to Collection</button> {/* Add to Collection Button */}
         <div className="publication-hashtags-container" ref={hashtagsContainerRef}>
           <ul className="publication-hashtags">
             {visibleHashtags}
           </ul>
         </div>
       </div>
+      
+      {isAddingToCollection && (
+        <AddToCollectionModal 
+          publicationId={publication.id}
+          collections={userCollections}
+          onClose={() => setIsAddingToCollection(false)}
+        />
+      )}
     </li>
   );
 };

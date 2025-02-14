@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import SearchCommunity from './SearchCommunity';
 import SearchPublication from './SearchPublication';
-import '../../sharedStyles/SearchPage.css'; // Import the CSS file
+import '../../sharedStyles/PageCommonStyle.css';
+import '../../sharedStyles/SearchPage.css'; 
 
 const SearchPageMain = () => {
   const [activeTab, setActiveTab] = useState('publications');

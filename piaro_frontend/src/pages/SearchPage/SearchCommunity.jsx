@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../../sharedStyles/SearchPage.css'; // Import the CSS file
+import '../../sharedStyles/PageCommonStyle.css'; 
 
 const SearchCommunity = ({ query }) => {
   const [results, setResults] = useState([]);
@@ -30,12 +30,18 @@ const SearchCommunity = ({ query }) => {
   };
 
   return (
-    <div className="search-results-wrapper">
+    <div className="publication-list-wrapper">
       <h2>Search Results for Communities</h2>
       {results.length > 0 ? (
-        <ul>
+        <ul className="publications-list">
           {results.map(community => (
-            <li key={community.id} onClick={() => handleCommunityClick(community.id)}>{community.name}</li>
+            <li
+              key={community.id}
+              onClick={() => handleCommunityClick(community.id)}
+              className="publication-item"
+            >
+              {community.name}
+            </li>
           ))}
         </ul>
       ) : (

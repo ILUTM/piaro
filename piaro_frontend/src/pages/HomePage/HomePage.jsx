@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
-import '../../sharedStyles/HomePage.css';
+import '../../sharedStyles/PageCommonStyle.css'; // Import shared styles
 
 const HomePage = () => {
   const [publications, setPublications] = useState([]);
@@ -43,9 +43,9 @@ const HomePage = () => {
   const lastPublicationElementRef = useInfiniteScroll(hasMore, isFetching, setPageNumber);
 
   return (
-    <div className="homepage-wrapper">
+    <div className="page-wrapper">
       <h2>Newest Publications</h2>
-      {error && <p>{error}</p>}
+      {error && <p className="error">{error}</p>}
       <div className="publication-list-wrapper">
         <ul className="publications-list">
           {publications.map((publication, index) => (
@@ -63,4 +63,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
