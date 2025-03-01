@@ -4,6 +4,7 @@ import '../../sharedStyles/PublicationList.css';
 import LikeComponent from '../Like/LikeComponent';
 import { fetchMyCollections } from '../../utils/collectionUtils';
 import AddToCollectionModal from './AddToCollectionModal';
+import ImageModal from './ImageModal'; 
 
 const PublicationListItem = ({
   publication,
@@ -14,10 +15,12 @@ const PublicationListItem = ({
   const [showMore, setShowMore] = useState(false);
   const [visibleHashtags, setVisibleHashtags] = useState([]);
   const [isAddingToCollection, setIsAddingToCollection] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false); 
+  const [selectedImage, setSelectedImage] = useState(null); 
   const [userCollections, setUserCollections] = useState([]);
   const hashtagsContainerRef = useRef(null);
+  const contentRef = useRef(null);
 
-  // Destructure like data from the publication prop
   const { likes_count, dislikes_count, user_like_status } = publication;
 
   const { goToSearch, goToUser, goToCommunity, goToPublication } = useNavigation(); 
@@ -57,6 +60,22 @@ const PublicationListItem = ({
     }
   }, [publication.hashtags, showMore]);
 
+  useEffect(() => {
+    if (contentRef.current) {
+      const images = contentRef.current.querySelectorAll('img');
+      images.forEach((img) => {
+        img.style.cursor = 'pointer';
+        img.addEventListener('click', handleImageClick);
+      });
+
+      return () => {
+        images.forEach((img) => {
+          img.removeEventListener('click', handleImageClick);
+        });
+      };
+    }
+  }, [publication.content, showMore]);
+
   const handleShowMore = () => setShowMore(!showMore);
 
   const handleHashtagClick = (hashtag) => {
@@ -86,6 +105,12 @@ const PublicationListItem = ({
     }
   };
 
+  const handleImageClick = (e) => {
+    e.stopPropagation(); 
+    setSelectedImage(e.target.src); 
+    setIsImageModalOpen(true);
+  };
+
   return (
     <li ref={lastPublicationElementRef} key={publication.id} className="publication-container">
       <div className="publication-header">
@@ -107,6 +132,7 @@ const PublicationListItem = ({
           className="publication-content"
           style={{ maxHeight: showMore ? 'none' : '500px', overflow: 'hidden' }}
           dangerouslySetInnerHTML={{ __html: publication.content }}
+          ref={contentRef}
         />
         {publication.content.length > 500 && (
           <button className="show-more-button" onClick={handleShowMore}>
@@ -138,6 +164,13 @@ const PublicationListItem = ({
           publicationId={publication.id}
           collections={userCollections}
           onClose={() => setIsAddingToCollection(false)}
+        />
+      )}
+
+      {isImageModalOpen && (
+        <ImageModal
+          imageUrl={selectedImage}
+          onClose={() => setIsImageModalOpen(false)}
         />
       )}
     </li>

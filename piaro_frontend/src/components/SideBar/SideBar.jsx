@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../../sharedStyles/SideBar.css';
 import { useAuth } from '../AuthContext/AuthContext';
 import { useNavigation } from '../../utils/navigation'; 
-import { fetchMyCollections } from '../../utils/collectionUtils';
+import { fetchMyCollections, removePublicationFromCollection } from '../../utils/collectionUtils'; 
 import CreateCollectionForm from './CreateCollectionForm';
 import CollectionViewModal from './CollectionViewModal';
 
@@ -142,6 +142,25 @@ function SideBar() {
     setSelectedCollection(collection);
   };
 
+  // Function to handle removing a publication from a collection
+  const handleRemovePublication = async (publicationId) => {
+    const token = localStorage.getItem('token');
+    if (!selectedCollection) return;
+
+    try {
+      await removePublicationFromCollection(token, selectedCollection.id, publicationId);
+
+      setSelectedCollection(prevCollection => ({
+        ...prevCollection,
+        publications: prevCollection.publications.filter(pub => pub.id !== publicationId),
+      }));
+
+      console.log('Publication removed successfully');
+    } catch (error) {
+      console.error('Failed to remove publication:', error);
+    }
+  };
+
   return (
     <div className="sidebar">
       {isLoggedIn ? (
@@ -216,6 +235,7 @@ function SideBar() {
         <CollectionViewModal
           collection={selectedCollection}
           onClose={() => setSelectedCollection(null)}
+          onRemovePublication={handleRemovePublication} 
         />
       )}
     </div>

@@ -15,17 +15,20 @@ const CreatePublication = () => {
   });
   const [newHashtag, setNewHashtag] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false); 
 
   const handleCreatePublication = (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
 
-    console.log('New Publication Data:', newPublication);
-
     if (!newPublication.title || !newPublication.content) {
       alert('Title and content are required.');
       return;
     }
+
+    if (isLoading) return; 
+
+    setIsLoading(true); 
 
     fetch('http://127.0.0.1:8000/api/publications/post_publication/', {
       method: 'POST',
@@ -52,6 +55,9 @@ const CreatePublication = () => {
     .catch(error => {
       console.error('There was an error posting the publication!', error);
       setError('Posting publication failed. It will be repaired soon.');
+    })
+    .finally(() => {
+      setIsLoading(false); 
     });
   };
 
@@ -122,7 +128,9 @@ const CreatePublication = () => {
             </span>
           ))}
         </div>
-        <button type="submit" className="form-button">Create Publication</button>
+        <button type="submit" className="form-button" disabled={isLoading}>
+          {isLoading ? 'Creating...' : 'Create Publication'}
+        </button>
       </form>
     </div>
   );

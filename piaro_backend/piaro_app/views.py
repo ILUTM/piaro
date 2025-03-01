@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Count, Q
 import requests
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password, check_password
@@ -598,15 +598,6 @@ class CollectionViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    @action(detail=True, methods=['patch'])
-    def toggle_visibility(self, request, pk=None):
-        collection = self.get_object()
-        if collection.user != request.user:
-            return Response({'error': 'You do not have permission to modify this collection.'}, status=status.HTTP_403_FORBIDDEN)
-        collection.is_public = not collection.is_public
-        collection.save()
-        return Response({'status': 'visibility toggled'})
-
     @action(detail=True, methods=['post'])
     def add_publication(self, request, pk=None):
         collection = self.get_object()
@@ -617,37 +608,22 @@ class CollectionViewSet(viewsets.ModelViewSet):
         collection.publications.add(publication)
         return Response({'status': 'publication added'})
 
-    @action(detail=True, methods=['get'])
-    def view_public(self, request, pk=None):
-        collection = self.get_object()
-        if collection.is_public:
-            serializer = self.get_serializer(collection)
-            return Response(serializer.data)
-        else:
-            return Response({'error': 'This collection is private.'}, status=status.HTTP_403_FORBIDDEN)
-
     @action(detail=True, methods=['post'])
-    def copy_collection(self, request, pk=None):
-        original_collection = self.get_object()
-        if not original_collection.is_public:
-            return Response({'error': 'This collection is private and cannot be copied.'}, status=status.HTTP_403_FORBIDDEN)
-        new_collection = Collection.objects.create(
-            user=request.user,
-            name=f'Copy of {original_collection.name}',
-            is_public=False
-        )
-        new_collection.publications.set(original_collection.publications.all())
-        new_collection.save()
-        return Response({'status': 'collection copied', 'collection': CollectionSerializer(new_collection).data})
+    def remove_publication(self, request, pk=None):
+        collection = self.get_object()
+        if collection.user != request.user:
+            return Response({'error': 'You do not have permission to modify this collection.'}, status=status.HTTP_403_FORBIDDEN)
+        publication_id = request.data.get('publication_id')
+        publication = get_object_or_404(Publication, id=publication_id)
+        collection.publications.remove(publication)
+        return Response({'status': 'publication removed'})
 
     @action(detail=False, methods=['post'])
     def create_collection(self, request):
-        print(request.data)
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=self.request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
@@ -659,6 +635,8 @@ class CollectionViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def get_collection(self, request, pk=None):
-        publication = get_object_or_404(Collection, pk=pk)
-        serializer = self.get_serializer(publication)
+        collection = get_object_or_404(Collection, pk=pk)
+        if collection.user != request.user:
+            return Response({'error': 'You do not have permission to view this collection.'}, status=status.HTTP_403_FORBIDDEN)
+        serializer = self.get_serializer(collection)
         return Response(serializer.data)

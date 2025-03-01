@@ -5,7 +5,6 @@ import styles from '../../sharedStyles/CreateCollectionForm.module.css';
 
 const CreateCollectionForm = ({ onClose, onCollectionCreated }) => {
   const [name, setName] = useState('');
-  const [isPublic, setIsPublic] = useState(false);
   const [error, setError] = useState('');
 
   const handleCreate = async (e) => {
@@ -18,7 +17,7 @@ const CreateCollectionForm = ({ onClose, onCollectionCreated }) => {
     }
 
     try {
-      const newCollection = await createCollection(token, { name, is_public: isPublic });
+      const newCollection = await createCollection(token, { name });
       onCollectionCreated(newCollection); 
       onClose();
     } catch (error) {
@@ -41,16 +40,6 @@ const CreateCollectionForm = ({ onClose, onCollectionCreated }) => {
             onChange={(e) => setName(e.target.value)}
             className={styles.formInput}
           />
-          <div className={styles.checkboxContainer}>
-            <label>
-              <input
-                type="checkbox"
-                checked={isPublic}
-                onChange={(e) => setIsPublic(e.target.checked)}
-              />
-              Public Collection
-            </label>
-          </div>
           <button type="submit" className={styles.formButton}>
             Create
           </button>

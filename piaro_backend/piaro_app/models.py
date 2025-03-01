@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager, PermissionsMixin
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import JSONField
 from django.utils.deconstruct import deconstructible
@@ -94,8 +94,12 @@ class Community(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
-            if not self.slug: 
-                self.slug = f"community-{self.id}"  
+            # Ensure the slug is unique
+            original_slug = self.slug
+            counter = 1
+            while Community.objects.filter(slug=self.slug).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -116,12 +120,18 @@ class Publication(models.Model):
     date_written = models.DateField(null=True, blank=True)
     community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='publications', null=False)
     slug = models.SlugField(max_length=200, unique=True, blank=True)
+    likes = GenericRelation('Like', related_query_name='publication')
     
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.title)
+            # Ensure the slug is unique
+            original_slug = self.slug
+            counter = 1
+            while Publication.objects.filter(slug=self.slug).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
         super().save(*args, **kwargs)
-
     class Meta:
         ordering = ['-date_posted']
         verbose_name = 'Publication'

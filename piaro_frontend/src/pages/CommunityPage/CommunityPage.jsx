@@ -4,7 +4,7 @@ import PublicationListItem from '../../components/SharedElements/PublicationList
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 import { fetchContentType, subscribe, unsubscribe, checkSubscription, toggleNotifications } from '../../utils/subscriptionUtils';
 import '../../sharedStyles/PageCommonStyle.css';
-import '../../sharedStyles/CommunityPage.css'; 
+import '../../sharedStyles/CommunityPage.css';
 
 const CommunityPage = () => {
   const { slug } = useParams();
@@ -60,11 +60,11 @@ const CommunityPage = () => {
     } finally {
       setIsFetching(false);
     }
-  }, [slug]); 
+  }, [slug]);
 
   const checkSubscriptionStatus = useCallback(async () => {
     try {
-      const data = await checkSubscription(contentType, community.slug);
+      const data = await checkSubscription(contentType, community.id); 
       setIsSubscribed(data.subscribed);
       setSendNotifications(data.send_notifications);
     } catch (error) {
@@ -74,7 +74,7 @@ const CommunityPage = () => {
 
   const handleSubscribe = async () => {
     try {
-      await subscribe(contentType, community.slug); 
+      await subscribe(contentType, community.id); 
       setIsSubscribed(true);
       checkSubscriptionStatus();
     } catch (error) {
@@ -84,7 +84,7 @@ const CommunityPage = () => {
 
   const handleUnsubscribe = async () => {
     try {
-      await unsubscribe(contentType, community.slug); 
+      await unsubscribe(contentType, community.id);
       setIsSubscribed(false);
       checkSubscriptionStatus();
     } catch (error) {
@@ -94,7 +94,7 @@ const CommunityPage = () => {
 
   const handleToggleNotifications = async () => {
     try {
-      const data = await toggleNotifications(contentType, community.slug); 
+      const data = await toggleNotifications(contentType, community.id);
       setSendNotifications(data.send_notifications);
     } catch (error) {
       console.error('There was an error toggling notifications', error);
