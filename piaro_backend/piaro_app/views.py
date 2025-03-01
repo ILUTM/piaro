@@ -201,7 +201,7 @@ class LogoutViewSet(viewsets.ViewSet):
                     token = RefreshToken(refresh_token)
                     token.blacklist()
                 except TokenError as e:
-                    print(f"Token error: {e}")  # Debugging
+                    print(f"Token error: {e}")  
                     if "Token is blacklisted" not in str(e):
                         return Response({"detail": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -211,7 +211,7 @@ class LogoutViewSet(viewsets.ViewSet):
             response.delete_cookie(
                 'refresh_token',
                 path='/',
-                domain='127.0.0.1',  # Ensure this matches the domain used when setting the cookie
+                domain='127.0.0.1',  
             )
             return response
         except Exception as e:
@@ -256,9 +256,9 @@ class CommunityViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response({"detail": "No query provided."}, status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=True, methods=['get'])
-    def details(self, request, pk=None):
-        community = get_object_or_404(Community, pk=pk)
+    @action(detail=False, methods=['get'], url_path='details/(?P<slug>[^/.]+)')
+    def details(self, request, slug=None):
+        community = get_object_or_404(Community, slug=slug)
         serializer = self.get_serializer(community)
         return Response(serializer.data)
     
@@ -274,6 +274,21 @@ class PublicationViewSet(viewsets.ModelViewSet):
     serializer_class = PublicationSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = PublicationPaginator
+    
+    def get_queryset(self):
+        # Annotate the queryset with likes and dislikes counts
+        content_type = ContentType.objects.get_for_model(Publication)
+        queryset = super().get_queryset().annotate(
+            likes_count=Count(
+                'likes',
+                filter=Q(likes__content_type=content_type, likes__is_like=Like.LIKE)
+            ),
+            dislikes_count=Count(
+                'likes',
+                filter=Q(likes__content_type=content_type, likes__is_like=Like.DISLIKE)
+            )
+        )
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -334,9 +349,9 @@ class PublicationViewSet(viewsets.ModelViewSet):
             print(serializer.errors)  
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=True, methods=['get'])
-    def get_publication(self, request, pk=None):
-        publication = get_object_or_404(Publication, pk=pk)
+    @action(detail=False, methods=['get'], url_path='get-publication/(?P<slug>[^/.]+)')
+    def get_publication(self, request, slug=None):
+        publication = get_object_or_404(Publication, slug=slug)
         serializer = self.get_serializer(publication)
         return Response(serializer.data)
     
@@ -365,16 +380,16 @@ class PublicationViewSet(viewsets.ModelViewSet):
 
         return Response({"detail": "No query or hashtags provided."}, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['get'], url_path='by-community/(?P<pk>[^/.]+)')
-    def publications_by_community(self, request, pk=None):
-        community = get_object_or_404(Community, pk=pk)
+    @action(detail=False, methods=['get'], url_path='by-community/(?P<slug>[^/.]+)')
+    def publications_by_community(self, request, slug=None):
+        community = get_object_or_404(Community, slug=slug)
         publications = Publication.objects.filter(community=community)
         page = self.paginate_queryset(publications)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
         return Response(serializer.data)
-
+    
     @action(detail=False, methods=['get'])
     def all_publications(self, request):
         publications = Publication.objects.all()

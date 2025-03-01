@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigation } from '../../utils/navigation'; 
 import '../../sharedStyles/SearchBar.css';
 
 const SearchBar = () => {
@@ -7,12 +7,12 @@ const SearchBar = () => {
     const [hashtags, setHashtags] = useState([]);
     const [showHashtagModal, setShowHashtagModal] = useState(false);
     const [newHashtag, setNewHashtag] = useState('');
-    const navigate = useNavigate();
+    const { goToSearch } = useNavigation();
     const modalRef = useRef(null);
 
     const handleSearch = (e) => {
         e.preventDefault();
-        navigate(`/search?query=${query}&hashtags=${hashtags.join(',')}`);
+        goToSearch(query, hashtags.join(',')); 
     };
 
     const handleAddHashtag = () => {
@@ -20,7 +20,7 @@ const SearchBar = () => {
             setHashtags([...hashtags, newHashtag]);
             setNewHashtag('');
         } else {
-            alert('invalid hashtag');
+            alert('Invalid hashtag');
         }
     };
 
@@ -62,7 +62,13 @@ const SearchBar = () => {
                         className="search-input"
                     />
                     <div className="search-buttons">
-                        <button type="button" onClick={() => setShowHashtagModal(true)} className="add-hashtag-button">#</button>
+                        <button
+                            type="button"
+                            onClick={() => setShowHashtagModal(true)}
+                            className="search-bar-hashtag-button"
+                        >
+                            #
+                        </button>
                         <button type="submit" className="search-button">🔍</button>
                     </div>
                 </div>
@@ -76,7 +82,7 @@ const SearchBar = () => {
                 ))}
             </div>
             {showHashtagModal && (
-                <div className="modal">
+                <div className="modal-overlay">
                     <div className="modal-content" ref={modalRef}>
                         <span className="close" onClick={handleCloseModal} aria-label="Close modal">×</span>
                         <h2>Add Hashtag</h2>
@@ -87,7 +93,7 @@ const SearchBar = () => {
                             placeholder="Enter hashtag"
                             className="new-hashtag-input"
                         />
-                        <button type="button" onClick={handleAddHashtag} className="add-hashtag-button">#</button>
+                        <button type="button" onClick={handleAddHashtag} className="add-hashtag-button">Add Hashtag</button>
                     </div>
                 </div>
             )}

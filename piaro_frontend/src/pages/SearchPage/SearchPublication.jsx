@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useNavigation } from '../../utils/navigation'; 
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 import '../../sharedStyles/PageCommonStyle.css';
@@ -9,8 +10,8 @@ const SearchPublication = ({ query, hashtags }) => {
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
+  const { goToPublication, goToUser, goToCommunity } = useNavigation();
 
   const fetchPublications = useCallback(async (page) => {
     try {
@@ -52,16 +53,16 @@ const SearchPublication = ({ query, hashtags }) => {
     }
   }, [pageNumber, fetchPublications]);
 
-  const handlePublicationClick = (id) => {
-    navigate(`/Publication/${id}`);
+  const handlePublicationClick = (slug) => {
+    goToPublication(slug); 
   };
 
   const handleUserClick = (id) => {
-    navigate(`/user/${id}`);
+    goToUser(id); 
   };
 
-  const handleCommunityClick = (id) => {
-    navigate(`/community/${id}`);
+  const handleCommunityClick = (slug) => {
+    goToCommunity(slug); 
   };
 
   return (

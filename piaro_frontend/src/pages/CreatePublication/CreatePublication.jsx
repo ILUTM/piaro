@@ -13,6 +13,7 @@ const CreatePublication = () => {
     hashtags: [],
     community: community?.id || ''
   });
+  const [newHashtag, setNewHashtag] = useState('');
   const [error, setError] = useState('');
 
   const handleCreatePublication = (e) => {
@@ -58,6 +59,25 @@ const CreatePublication = () => {
     setNewPublication({ ...newPublication, content });
   };
 
+  const handleAddHashtag = () => {
+    if (newHashtag.trim() && !newPublication.hashtags.includes(newHashtag.trim())) {
+      setNewPublication({
+        ...newPublication,
+        hashtags: [...newPublication.hashtags, newHashtag.trim()]
+      });
+      setNewHashtag(''); 
+    } else {
+      alert('Hashtag is empty or already exists.');
+    }
+  };
+
+  const handleRemoveHashtag = (hashtag) => {
+    setNewPublication({
+      ...newPublication,
+      hashtags: newPublication.hashtags.filter(h => h !== hashtag)
+    });
+  };
+
   return (
     <div className="create-publication-container">
       <h2>Create a New Publication</h2>
@@ -72,13 +92,36 @@ const CreatePublication = () => {
           className="form-input"
         />
         <RichTextEditor value={newPublication.content} onChange={handleContentChange} />
-        <input
-          type="text"
-          placeholder="Hashtags"
-          value={newPublication.hashtags.join(', ')}
-          onChange={(e) => setNewPublication({ ...newPublication, hashtags: e.target.value.split(', ') })}
-          className="form-input"
-        />
+        <div className="hashtag-input-container">
+          <input
+            type="text"
+            placeholder="Add a hashtag"
+            value={newHashtag}
+            onChange={(e) => setNewHashtag(e.target.value)}
+            className="form-input"
+          />
+          <button
+            type="button"
+            onClick={handleAddHashtag}
+            className="add-hashtag-button"
+          >
+            Add Hashtag
+          </button>
+        </div>
+        <div className="hashtags-container">
+          {newPublication.hashtags.map((hashtag, index) => (
+            <span key={index} className="hashtag">
+              #{hashtag}
+              <button
+                type="button"
+                onClick={() => handleRemoveHashtag(hashtag)}
+                className="remove-hashtag-button"
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
         <button type="submit" className="form-button">Create Publication</button>
       </form>
     </div>
@@ -86,4 +129,3 @@ const CreatePublication = () => {
 };
 
 export default CreatePublication;
-

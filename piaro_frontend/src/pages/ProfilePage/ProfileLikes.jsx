@@ -13,6 +13,7 @@ const ProfileLikes = () => {
         const getUserLikes = async () => {
             try {
                 const data = await fetchUserLikes();
+                console.log(data);
                 setLikes(data);
                 setPublications(data.filter(like => like.content_type.model === 'publication'));
                 setComments(data.filter(like => like.content_type.model === 'comment'));

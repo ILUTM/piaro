@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
-import '../../sharedStyles/PageCommonStyle.css'; // Import shared styles
+import { fetchContentTypeId } from '../../utils/ContentTypes'; 
+import '../../sharedStyles/PageCommonStyle.css';
 
 const HomePage = () => {
   const [publications, setPublications] = useState([]);
@@ -9,6 +10,15 @@ const HomePage = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
+  const [contentTypeId, setContentTypeId] = useState(null); 
+
+  useEffect(() => {
+    const fetchContentType = async () => {
+      const id = await fetchContentTypeId('publication');
+      setContentTypeId(id);
+    };
+    fetchContentType();
+  }, []);
 
   const fetchPublications = useCallback(async (page) => {
     try {
@@ -54,6 +64,7 @@ const HomePage = () => {
               publication={publication}
               index={index}
               lastPublicationElementRef={index === publications.length - 1 ? lastPublicationElementRef : null}
+              contentTypeId={contentTypeId} 
             />
           ))}
         </ul>

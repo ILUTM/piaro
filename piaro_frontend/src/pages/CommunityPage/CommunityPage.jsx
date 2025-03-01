@@ -7,7 +7,7 @@ import '../../sharedStyles/PageCommonStyle.css';
 import '../../sharedStyles/CommunityPage.css'; 
 
 const CommunityPage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const [community, setCommunity] = useState(null);
   const [publications, setPublications] = useState([]);
   const [error, setError] = useState('');
@@ -20,7 +20,7 @@ const CommunityPage = () => {
   const [contentType, setContentType] = useState(0);
 
   const fetchCommunity = useCallback(() => {
-    fetch(`http://127.0.0.1:8000/api/communities/${id}/details/`, {
+    fetch(`http://127.0.0.1:8000/api/communities/details/${slug}/`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -38,12 +38,12 @@ const CommunityPage = () => {
     .catch(error => {
       console.error("There was an error fetching community data!", error);
     });
-  }, [id]);
+  }, [slug]);
 
   const fetchCommunityPublications = useCallback(async (page) => {
     try {
       setIsFetching(true);
-      const response = await fetch(`http://127.0.0.1:8000/api/publications/by-community/${id}/?page=${page}`, {
+      const response = await fetch(`http://127.0.0.1:8000/api/publications/by-community/${slug}/?page=${page}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -60,11 +60,11 @@ const CommunityPage = () => {
     } finally {
       setIsFetching(false);
     }
-  }, [id]);
+  }, [slug]); 
 
   const checkSubscriptionStatus = useCallback(async () => {
     try {
-      const data = await checkSubscription(contentType, community.id);
+      const data = await checkSubscription(contentType, community.slug);
       setIsSubscribed(data.subscribed);
       setSendNotifications(data.send_notifications);
     } catch (error) {
@@ -74,7 +74,7 @@ const CommunityPage = () => {
 
   const handleSubscribe = async () => {
     try {
-      await subscribe(contentType, community.id);
+      await subscribe(contentType, community.slug); 
       setIsSubscribed(true);
       checkSubscriptionStatus();
     } catch (error) {
@@ -84,7 +84,7 @@ const CommunityPage = () => {
 
   const handleUnsubscribe = async () => {
     try {
-      await unsubscribe(contentType, community.id);
+      await unsubscribe(contentType, community.slug); 
       setIsSubscribed(false);
       checkSubscriptionStatus();
     } catch (error) {
@@ -94,7 +94,7 @@ const CommunityPage = () => {
 
   const handleToggleNotifications = async () => {
     try {
-      const data = await toggleNotifications(contentType, community.id);
+      const data = await toggleNotifications(contentType, community.slug); 
       setSendNotifications(data.send_notifications);
     } catch (error) {
       console.error('There was an error toggling notifications', error);
@@ -111,7 +111,7 @@ const CommunityPage = () => {
     fetchCommunity();
     fetchCommunityPublications(pageNumber);
     fetchContentType('community').then(setContentType);
-  }, [id, pageNumber, fetchCommunityPublications, fetchCommunity]);
+  }, [slug, pageNumber, fetchCommunityPublications, fetchCommunity]);
 
   useEffect(() => {
     if (community && contentType) {

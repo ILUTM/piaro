@@ -2,30 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CommentField from './CommentField/CommentField';
 import LikeComponent from '../../components/Like/LikeComponent';
-import { fetchContentTypeId } from '../../utils/ContentTypes';
 import '../../sharedStyles/PublicationPage.css';
 
-const PublicationPage = () => {
-  const { id } = useParams();
+const PublicationPage = ({ contentTypeId }) => {
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [publication, setPublication] = useState(null);
   const [error, setError] = useState('');
-  const [contentTypeId, setContentTypeId] = useState(null);
 
   useEffect(() => {
     fetchPublication();
-  }, [id]);
-
-  useEffect(() => {
-    const fetchContentType = async () => {
-      const contentTypeId = await fetchContentTypeId('publication');
-      setContentTypeId(contentTypeId);
-    };
-    fetchContentType();
-  }, []);
+  }, [slug]);
 
   const fetchPublication = () => {
-    fetch(`http://127.0.0.1:8000/api/publications/${id}/get_publication/`, {
+    fetch(`http://127.0.0.1:8000/api/publications/get-publication/${slug}/`, { 
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -62,7 +52,7 @@ const PublicationPage = () => {
   }
 
   const handleCommunityClick = () => {
-    navigate(`/community/${publication.community}`);
+    navigate(`/community/${publication.community_slug}`);
   };
 
   return (
@@ -83,7 +73,7 @@ const PublicationPage = () => {
       </ul>
       {contentTypeId && <LikeComponent contentType={contentTypeId} objectId={publication.id} />}
       <div className="comment-field-wrapper">
-        <CommentField publicationId={id} />
+        <CommentField publicationId={publication.id} contentTypeId={contentTypeId} /> {/* Pass contentTypeId to CommentField */}
       </div>
     </div>
   );

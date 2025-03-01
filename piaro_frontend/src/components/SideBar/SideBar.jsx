@@ -1,7 +1,7 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../sharedStyles/SideBar.css';
 import { useAuth } from '../AuthContext/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigation } from '../../utils/navigation'; 
 import { fetchMyCollections } from '../../utils/collectionUtils';
 import CreateCollectionForm from './CreateCollectionForm';
 import CollectionViewModal from './CollectionViewModal';
@@ -18,7 +18,7 @@ function SideBar() {
   const [isCreatingCollection, setIsCreatingCollection] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const { goToCommunity, goToUser } = useNavigation();
   const { authUser, isLoggedIn } = useAuth();
   const [contentTypeCommunity, setContentTypeCommunity] = useState(0);
   const [contentTypeUser, setContentTypeUser] = useState(0);
@@ -126,11 +126,11 @@ function SideBar() {
   };
 
   const handleCommunityClick = (id) => {
-    navigate(`/community/${id}`);
+    goToCommunity(id); 
   };
 
   const handleUserClick = (id) => {
-    navigate(`/user/${id}`);
+    goToUser(id); 
   };
 
   const handleCollectionCreated = (newCollection) => {
@@ -139,10 +139,8 @@ function SideBar() {
 
   const handleCollectionClick = (collection) => {
     console.log("Collection clicked:", collection);
-    
     setSelectedCollection(collection);
   };
-  
 
   return (
     <div className="sidebar">

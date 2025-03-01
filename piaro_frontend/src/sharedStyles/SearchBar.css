@@ -36,7 +36,24 @@
   gap: 2px;
 }
 
-.add-hashtag-button,
+/* Styles for the hashtag button in the search bar */
+.search-bar-hashtag-button {
+  background-color: #34495e;
+  color: #ecf0f1;
+  border: none;
+  cursor: pointer;
+  width: 40px; 
+  height: 40px; 
+  border-radius: 50%; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-bar-hashtag-button:hover {
+  background-color: #95a5a6;
+}
+
 .search-button {
   background-color: #34495e;
   color: #ecf0f1;
@@ -50,7 +67,6 @@
   justify-content: center;
 }
 
-.add-hashtag-button:hover,
 .search-button:hover {
   background-color: #95a5a6;
 }
@@ -79,17 +95,17 @@
   cursor: pointer;
 }
 
-.modal {
+.modal-overlay {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: none;
-  width: 50%;
-  height: 50%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
 }
 
 .modal-content {
@@ -100,6 +116,7 @@
   width: 90%;
   max-width: 400px;
   text-align: center;
+  position: relative;
 }
 
 .close {
@@ -117,6 +134,22 @@
   font-size: 1em;
   width: calc(100% - 40px);
   margin-bottom: 20px;
+}
+
+/* Styles for the "Add Hashtag" button in the modal */
+.modal-add-hashtag-button {
+  padding: 10px 15px;
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+}
+
+.modal-add-hashtag-button:hover {
+  background-color: #2980b9;
 }
 
 @media (max-width: 768px) {

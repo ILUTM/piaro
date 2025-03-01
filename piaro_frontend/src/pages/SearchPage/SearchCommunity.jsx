@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigation } from '../../utils/navigation';
 import '../../sharedStyles/PageCommonStyle.css'; 
 
 const SearchCommunity = ({ query }) => {
   const [results, setResults] = useState([]);
-  const navigate = useNavigate();
+  const { goToCommunity } = useNavigation(); 
 
   useEffect(() => {
     if (query) {
@@ -25,8 +25,8 @@ const SearchCommunity = ({ query }) => {
     }
   }, [query]);
 
-  const handleCommunityClick = (id) => {
-    navigate(`/community/${id}`);
+  const handleCommunityClick = (slug) => {
+    goToCommunity(slug); 
   };
 
   return (
@@ -37,7 +37,7 @@ const SearchCommunity = ({ query }) => {
           {results.map(community => (
             <li
               key={community.id}
-              onClick={() => handleCommunityClick(community.id)}
+              onClick={() => handleCommunityClick(community.slug)}
               className="publication-item"
             >
               {community.name}

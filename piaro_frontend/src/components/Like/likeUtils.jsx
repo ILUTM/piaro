@@ -29,7 +29,6 @@ export const toggleLike = async (contentType, objectId, action) => {
             action: action,
         };
         
-        // Log the request body
         console.log('Sending request with:', requestBody);
 
         const response = await fetch(`${apiUrl}/toggle/`, {

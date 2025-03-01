@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Hashtag, Community, Publication, Comment, Subscription, User, Like, Collection
 from django.contrib.auth import authenticate
+from django.contrib.contenttypes.models import ContentType
 
 
 #BLOCK OF USER SERIALIZERS
@@ -66,7 +67,7 @@ class CommunitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Community
-        fields = ('id', 'creator', 'name', 'photo', 'description')
+        fields = ('id', 'creator', 'name', 'photo', 'description', 'slug')
 
 
 class PublicationSerializer(serializers.ModelSerializer):
@@ -75,12 +76,48 @@ class PublicationSerializer(serializers.ModelSerializer):
     hashtags = HashtagSerializer(many=True, required=False)
     community = serializers.PrimaryKeyRelatedField(queryset=Community.objects.all())
     community_name = serializers.ReadOnlyField(source='community.name')
-    content = serializers.JSONField() 
+    community_slug = serializers.ReadOnlyField(source='community.slug')
+    content = serializers.JSONField()
+    
+    # Add fields for likes and dislikes
+    likes_count = serializers.SerializerMethodField()
+    dislikes_count = serializers.SerializerMethodField()
+    user_like_status = serializers.SerializerMethodField()
 
     class Meta:
         model = Publication
-        fields = ('id', 'title', 'author', 'author_id', 'date_posted', 'content', 'hashtags', 'community', 'community_name', 'date_written')
-    
+        fields = (
+            'id', 'title', 'author', 'author_id', 'date_posted', 'content', 'hashtags', 
+            'community', 'community_name', 'date_written', 'slug', 'community_slug',
+            'likes_count', 'dislikes_count', 'user_like_status'
+        )
+
+    def get_likes_count(self, obj):
+        return Like.objects.filter(
+            content_type=ContentType.objects.get_for_model(Publication),
+            object_id=obj.id,
+            is_like=Like.LIKE
+        ).count()
+
+    def get_dislikes_count(self, obj):
+        return Like.objects.filter(
+            content_type=ContentType.objects.get_for_model(Publication),
+            object_id=obj.id,
+            is_like=Like.DISLIKE
+        ).count()
+
+    def get_user_like_status(self, obj):
+        # Get the current user's like status for the publication
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            like = Like.objects.filter(
+                user=request.user,
+                content_type=ContentType.objects.get_for_model(Publication),
+                object_id=obj.id
+            ).first()
+            if like:
+                return 'like' if like.is_like == Like.LIKE else 'dislike'
+        return None
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
@@ -89,10 +126,11 @@ class CommentSerializer(serializers.ModelSerializer):
     parent_comment = serializers.PrimaryKeyRelatedField(queryset=Comment.objects.all(), required=False, allow_null=True)
     #Used to serialize nested replies
     replies = serializers.SerializerMethodField()
-
+    publication_slug = serializers.ReadOnlyField(source='publication.slug')
+    
     class Meta:
         model = Comment
-        fields = ('id', 'text', 'author', 'publication', 'parent_comment', 'date_posted', 'replies')
+        fields = ('id', 'text', 'author', 'publication', 'parent_comment', 'date_posted', 'replies', 'publication_slug')
 
     def get_replies(self, obj):
         if obj.replies.exists():

@@ -4,6 +4,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import JSONField
 from django.utils.deconstruct import deconstructible
+from slugify import slugify 
 import os
 
 
@@ -88,6 +89,14 @@ class Community(models.Model):
     name = models.CharField(max_length=50, unique=True)
     photo = models.ImageField(upload_to=UploadToCommunityDirectory(), null=True, blank=True)
     description = models.TextField()
+    slug = models.SlugField(max_length=50, unique=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+            if not self.slug: 
+                self.slug = f"community-{self.id}"  
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
@@ -106,6 +115,12 @@ class Publication(models.Model):
     hashtags = models.ManyToManyField(Hashtag, blank=True)
     date_written = models.DateField(null=True, blank=True)
     community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='publications', null=False)
+    slug = models.SlugField(max_length=200, unique=True, blank=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ['-date_posted']

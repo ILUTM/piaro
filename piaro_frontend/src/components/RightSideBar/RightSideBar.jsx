@@ -15,7 +15,7 @@ const RightSidebar = () => {
       <ul>
         {lastVisited.map((publication, index) => (
           <li key={index}>
-            <a href={`/publication/${publication.id}`}>{publication.title}</a>
+            <a href={`/publication/${publication.slug}`}>{publication.title}</a>
           </li>
         ))}
       </ul>

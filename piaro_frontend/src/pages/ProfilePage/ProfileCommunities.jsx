@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigation } from '../../utils/navigation'; 
 import '../../sharedStyles/ProfilePage.css';
 
 const ProfileCommunities = () => {
@@ -7,7 +7,7 @@ const ProfileCommunities = () => {
   const [newCommunity, setNewCommunity] = useState({name: '', description: ''});
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const navigate = useNavigate();
+  const { goToCommunity } = useNavigation();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -62,8 +62,8 @@ const ProfileCommunities = () => {
     });
   };
 
-  const handleCommunityClick = (id) => {
-    navigate(`/community/${id}`);
+  const handleCommunityClick = (slug) => {
+    goToCommunity(slug);
   };
 
   return (
@@ -73,7 +73,7 @@ const ProfileCommunities = () => {
       {success && <p className="success">{success}</p>}
       <ul>
         {communities.map(community => (
-          <li key={community.id} onClick={() => handleCommunityClick(community.id)}>{community.name}</li>
+          <li key={community.id} onClick={() => handleCommunityClick(community.slug)}>{community.name}</li>
         ))}
       </ul>
       <h3>Create New Community</h3>

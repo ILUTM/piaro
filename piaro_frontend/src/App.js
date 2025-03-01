@@ -25,8 +25,8 @@ function App() {
               <Route exact path="/" element={<HomePage />} />
               <Route path="/profile" element={<ProtectedRoute element={ProfileMain} />} />
               <Route path="/create-publication" element={<CreatePublication />} />
-              <Route path="/publication/:id" element={<PublicationPage />} />
-              <Route path="/community/:id" element={<CommunityPage />} />
+              <Route path="/publication/:slug" element={<PublicationPage />} />
+              <Route path="/community/:slug" element={<CommunityPage />} />
               <Route path="/user/:id" element={<UserPage />} />
               <Route path="/search" element={<SearchPageMain />} />
             </Routes>

@@ -1,20 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import CommentInput from './CommentInput';
 import LikeComponent from '../../../components/Like/LikeComponent';
-import { fetchContentTypeId } from '../../../utils/ContentTypes';
 import '../../../sharedStyles/CommentField.css';
 
-
-const CommentItem = ({ comment, handleReply, replyTo }) => {
+const CommentItem = ({ comment, handleReply, replyTo, contentTypeId }) => { // Accept contentTypeId as a prop
   const [replyComment, setReplyComment] = useState('');
-  const [contentTypeId, setContentTypeId] = useState(null);
-
-  useEffect(() => { 
-    const fetchContentType = async () => { 
-      const contentTypeId = await fetchContentTypeId('comment'); 
-      setContentTypeId(contentTypeId); 
-    }; fetchContentType(); 
-  }, []);
 
   const handleAddReply = async (e) => {
     e.preventDefault();
@@ -40,7 +30,7 @@ const CommentItem = ({ comment, handleReply, replyTo }) => {
         throw new Error('Network response was not ok.');
       }
       setReplyComment('');
-      handleReply(null); // Close the reply input after adding the reply
+      handleReply(null); 
     } catch (error) {
       console.error('There was an error adding the reply', error);
     }
@@ -51,7 +41,7 @@ const CommentItem = ({ comment, handleReply, replyTo }) => {
       <p className="comment-author">{comment.author}</p>
       <p className="comment-text">{comment.text}</p>
       <p className="comment-date">{new Date(comment.date_posted).toLocaleString()}</p>
-      {contentTypeId && ( <LikeComponent contentType={contentTypeId} objectId={comment.id} /> )}
+      {contentTypeId && <LikeComponent contentType={contentTypeId} objectId={comment.id} />}
       <button className="reply-button" onClick={() => handleReply(comment.id)}>Reply</button>
       <button className="cancel-reply-button" onClick={() => handleReply(null)}>Cancel</button>
       {replyTo === comment.id && (
@@ -70,6 +60,7 @@ const CommentItem = ({ comment, handleReply, replyTo }) => {
               comment={reply}
               handleReply={handleReply}
               replyTo={replyTo}
+              contentTypeId={contentTypeId} 
             />
           ))}
         </div>
@@ -79,4 +70,3 @@ const CommentItem = ({ comment, handleReply, replyTo }) => {
 };
 
 export default CommentItem;
-

@@ -1,32 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigation } from '../../utils/navigation'; 
 import '../../sharedStyles/PublicationList.css';
-import LikeComponent from '../Like/LikeComponent'; 
-import { fetchContentTypeId } from '../../utils/ContentTypes';  // A utility to fetch content type IDs
-import { fetchMyCollections } from '../../utils/collectionUtils'; // Import the fetchCollections utility
-import AddToCollectionModal from './AddToCollectionModal'; 
+import LikeComponent from '../Like/LikeComponent';
+import { fetchMyCollections } from '../../utils/collectionUtils';
+import AddToCollectionModal from './AddToCollectionModal';
 
 const PublicationListItem = ({
   publication,
   index,
   lastPublicationElementRef,
+  contentTypeId, 
 }) => {
   const [showMore, setShowMore] = useState(false);
-  const [contentTypeId, setContentTypeId] = useState(null);
   const [visibleHashtags, setVisibleHashtags] = useState([]);
-  const [isAddingToCollection, setIsAddingToCollection] = useState(false); // State to manage Add to Collection modal visibility
-  const [userCollections, setUserCollections] = useState([]); // State to store user's collections
+  const [isAddingToCollection, setIsAddingToCollection] = useState(false);
+  const [userCollections, setUserCollections] = useState([]);
   const hashtagsContainerRef = useRef(null);
 
-  const navigate = useNavigate();
+  // Destructure like data from the publication prop
+  const { likes_count, dislikes_count, user_like_status } = publication;
 
-  useEffect(() => {
-    const fetchContentType = async () => {
-      const contentTypeId = await fetchContentTypeId('publication');
-      setContentTypeId(contentTypeId);
-    };
-    fetchContentType();
-  }, []);
+  const { goToSearch, goToUser, goToCommunity, goToPublication } = useNavigation(); 
 
   useEffect(() => {
     if (hashtagsContainerRef.current) {
@@ -35,7 +29,7 @@ const PublicationListItem = ({
           {hashtag.name}
         </li>
       ));
-      
+
       const containerWidth = hashtagsContainerRef.current.offsetWidth;
       let widthSum = 0;
       const visible = [];
@@ -66,19 +60,19 @@ const PublicationListItem = ({
   const handleShowMore = () => setShowMore(!showMore);
 
   const handleHashtagClick = (hashtag) => {
-    navigate(`/search?hashtags=${hashtag}`);
+    goToSearch(null, hashtag); 
   };
 
-  const handlePublicationClick = (id) => {
-    navigate(`/Publication/${id}`);
+  const handlePublicationClick = (slug) => {
+    goToPublication(slug);
   };
 
   const handleUserClick = (id) => {
-    navigate(`/user/${id}`);
+    goToUser(id); 
   };
 
-  const handleCommunityClick = (id) => {
-    navigate(`/community/${id}`);
+  const handleCommunityClick = (slug) => {
+    goToCommunity(slug); 
   };
 
   const handleAddToCollection = async () => {
@@ -98,13 +92,13 @@ const PublicationListItem = ({
         <p className="publication-author" onClick={() => handleUserClick(publication.author_id)}>
           {publication.author}
         </p>
-        <p className="publication-community" onClick={() => handleCommunityClick(publication.community)}>
+        <p className="publication-community" onClick={() => handleCommunityClick(publication.community_slug)}>
           {publication.community_name}
         </p>
         <p className="publication-date">{new Date(publication.date_posted).toLocaleString()}</p>
       </div>
 
-      <h3 className="publication-title" onClick={() => handlePublicationClick(publication.id)}>
+      <h3 className="publication-title" onClick={() => handlePublicationClick(publication.slug)}>
         {publication.title}
       </h3>
 
@@ -123,18 +117,24 @@ const PublicationListItem = ({
 
       <div className="publication-footer">
         <div className="like-container">
-          {contentTypeId && <LikeComponent contentType={contentTypeId} objectId={publication.id} /> }
+          <LikeComponent
+            contentType={contentTypeId}
+            objectId={publication.id}
+            initialLikes={likes_count}
+            initialDislikes={dislikes_count}
+            initialUserLikeStatus={user_like_status}
+          />
         </div>
-        <button onClick={handleAddToCollection}>Add to Collection</button> {/* Add to Collection Button */}
+        <button onClick={handleAddToCollection}>Add to Collection</button>
         <div className="publication-hashtags-container" ref={hashtagsContainerRef}>
           <ul className="publication-hashtags">
             {visibleHashtags}
           </ul>
         </div>
       </div>
-      
+
       {isAddingToCollection && (
-        <AddToCollectionModal 
+        <AddToCollectionModal
           publicationId={publication.id}
           collections={userCollections}
           onClose={() => setIsAddingToCollection(false)}
