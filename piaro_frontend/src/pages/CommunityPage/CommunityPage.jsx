@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
 import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 import { fetchContentType, subscribe, unsubscribe, checkSubscription, toggleNotifications } from '../../utils/subscriptionUtils';
+import { fetchContentTypeId } from '../../utils/ContentTypes'; 
 import '../../sharedStyles/PageCommonStyle.css';
 import '../../sharedStyles/CommunityPage.css';
 
@@ -18,6 +19,15 @@ const CommunityPage = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [sendNotifications, setSendNotifications] = useState(false);
   const [contentType, setContentType] = useState(0);
+  // contentType for publications
+  const [contentTypeId, setContentTypeId] = useState(null);
+    useEffect(() => {
+      const fetchContentType = async () => {
+        const id = await fetchContentTypeId('publication');
+        setContentTypeId(id);
+      };
+      fetchContentType();
+    }, []);
 
   const fetchCommunity = useCallback(() => {
     fetch(`http://127.0.0.1:8000/api/communities/details/${slug}/`, {
@@ -153,6 +163,7 @@ const CommunityPage = () => {
               publication={publication}
               index={index}
               lastPublicationElementRef={index === publications.length - 1 ? lastPublicationElementRef : null}
+              contentTypeId={contentTypeId}
             />
           ))}
         </ul>

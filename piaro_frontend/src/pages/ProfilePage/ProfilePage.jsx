@@ -171,7 +171,7 @@ const ProfilePage = () => {
 
   return (
     <div className="profile-container">
-      <h2 className="profile-header">Profile</h2>
+      <h2 className="profile-header">{userData.username}</h2>
       {error && <p className="error">{error}</p>}
       {userData.profile_photo ? ( 
             <img src={userData.profile_photo} alt="Profile" className="profile-photo" /> 

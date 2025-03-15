@@ -50,6 +50,21 @@ const HomePage = () => {
     fetchPublications(pageNumber);
   }, [pageNumber, fetchPublications]);
 
+  const handleLikeToggle = (publicationId, likes, dislikes, userLikeStatus) => {
+    setPublications(prevPublications =>
+      prevPublications.map(publication =>
+        publication.id === publicationId
+          ? {
+              ...publication,
+              likes_count: likes,
+              dislikes_count: dislikes,
+              user_like_status: userLikeStatus,
+            }
+          : publication
+      )
+    );
+  };
+
   const lastPublicationElementRef = useInfiniteScroll(hasMore, isFetching, setPageNumber);
 
   return (
@@ -64,7 +79,8 @@ const HomePage = () => {
               publication={publication}
               index={index}
               lastPublicationElementRef={index === publications.length - 1 ? lastPublicationElementRef : null}
-              contentTypeId={contentTypeId} 
+              contentTypeId={contentTypeId}
+              onLikeToggle={handleLikeToggle} 
             />
           ))}
         </ul>

@@ -18,9 +18,9 @@ const PublicationListItem = ({
   const [isImageModalOpen, setIsImageModalOpen] = useState(false); 
   const [selectedImage, setSelectedImage] = useState(null); 
   const [userCollections, setUserCollections] = useState([]);
+  const [needsShowMore, setNeedsShowMore] = useState(false); 
   const hashtagsContainerRef = useRef(null);
   const contentRef = useRef(null);
-
   const { likes_count, dislikes_count, user_like_status } = publication;
 
   const { goToSearch, goToUser, goToCommunity, goToPublication } = useNavigation(); 
@@ -67,6 +67,10 @@ const PublicationListItem = ({
         img.style.cursor = 'pointer';
         img.addEventListener('click', handleImageClick);
       });
+
+      const contentHeight = contentRef.current.scrollHeight;
+      const maxHeight = 500; 
+      setNeedsShowMore(contentHeight > maxHeight);
 
       return () => {
         images.forEach((img) => {
@@ -134,7 +138,7 @@ const PublicationListItem = ({
           dangerouslySetInnerHTML={{ __html: publication.content }}
           ref={contentRef}
         />
-        {publication.content.length > 500 && (
+        {needsShowMore && (
           <button className="show-more-button" onClick={handleShowMore}>
             {showMore ? 'Show Less' : 'Show More'}
           </button>

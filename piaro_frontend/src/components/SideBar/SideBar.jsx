@@ -125,8 +125,8 @@ function SideBar() {
     }
   };
 
-  const handleCommunityClick = (id) => {
-    goToCommunity(id); 
+  const handleCommunityClick = (slug) => {
+    goToCommunity(slug); 
   };
 
   const handleUserClick = (id) => {
@@ -176,7 +176,7 @@ function SideBar() {
             {isCommunitiesOpen && (
               <ul>
                 {communities.map(community => (
-                  <li key={community.id} onClick={() => handleCommunityClick(community.id)}>
+                  <li key={community.id} onClick={() => handleCommunityClick(community.slug)}>
                     {community.name}
                   </li>
                 ))}
