@@ -3,7 +3,7 @@ import '../../../sharedStyles/CommentField.css';
 import CommentInput from './CommentInput';
 import CommentItem from './CommentItem';
 
-const CommentField = ({ publicationId }) => {
+const CommentField = ({ publicationId, communityOwnerId }) => {
   const [newComment, setNewComment] = useState('');
   const [replyTo, setReplyTo] = useState(null);
   const [error, setError] = useState('');
@@ -77,6 +77,27 @@ const CommentField = ({ publicationId }) => {
     setReplyTo(commentId);
   };
 
+  const handleDeleteComment = async (commentId) => {
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/comments/${commentId}/delete_comment/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      const data = await response.json();
+      console.log(data.detail); // "Comment marked as deleted."
+      // Refresh comments list
+      fetchComments();
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
+
+  // Get the current user from localStorage or your authentication system
+  const currentUser = localStorage.getItem('username'); // Replace with your actual user ID or username
+
   return (
     <div className="comment-field">
       <span className="text-3xl">nested component</span>
@@ -93,6 +114,9 @@ const CommentField = ({ publicationId }) => {
             comment={comment}
             handleReply={handleReply}
             replyTo={replyTo}
+            handleDeleteComment={handleDeleteComment}
+            currentUser={currentUser}
+            communityOwnerId={communityOwnerId}
           />
         ))}
       </div>

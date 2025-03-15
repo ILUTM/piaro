@@ -3,7 +3,15 @@ import CommentInput from './CommentInput';
 import LikeComponent from '../../../components/Like/LikeComponent';
 import '../../../sharedStyles/CommentField.css';
 
-const CommentItem = ({ comment, handleReply, replyTo, contentTypeId }) => { // Accept contentTypeId as a prop
+const CommentItem = ({ 
+  comment, 
+  handleReply, 
+  replyTo, 
+  contentTypeId, 
+  handleDeleteComment, 
+  currentUser, 
+  communityOwnerId 
+}) => {
   const [replyComment, setReplyComment] = useState('');
 
   const handleAddReply = async (e) => {
@@ -36,6 +44,10 @@ const CommentItem = ({ comment, handleReply, replyTo, contentTypeId }) => { // A
     }
   };
 
+  // Check if the current user is the comment creator or community owner
+  const isCommentCreator = comment.author === currentUser;
+  const isCommunityOwner = communityOwnerId === currentUser;
+
   return (
     <div key={comment.id} className="comment-content">
       <p className="comment-author">{comment.author}</p>
@@ -44,6 +56,17 @@ const CommentItem = ({ comment, handleReply, replyTo, contentTypeId }) => { // A
       {contentTypeId && <LikeComponent contentType={contentTypeId} objectId={comment.id} />}
       <button className="reply-button" onClick={() => handleReply(comment.id)}>Reply</button>
       <button className="cancel-reply-button" onClick={() => handleReply(null)}>Cancel</button>
+      
+      {/* Delete button for comment creator or community owner */}
+      {(isCommentCreator || isCommunityOwner) && (
+        <button 
+          className="delete-button" 
+          onClick={() => handleDeleteComment(comment.id)}
+        >
+          Delete
+        </button>
+      )}
+
       {replyTo === comment.id && (
         <CommentInput 
           handleAddComment={handleAddReply}
@@ -52,6 +75,7 @@ const CommentItem = ({ comment, handleReply, replyTo, contentTypeId }) => { // A
           isAddingComment={false} 
         />
       )}
+
       {comment.replies && comment.replies.length > 0 && (
         <div className="replies">
           {comment.replies.map(reply => (
@@ -60,7 +84,10 @@ const CommentItem = ({ comment, handleReply, replyTo, contentTypeId }) => { // A
               comment={reply}
               handleReply={handleReply}
               replyTo={replyTo}
-              contentTypeId={contentTypeId} 
+              contentTypeId={contentTypeId}
+              handleDeleteComment={handleDeleteComment}
+              currentUser={currentUser}
+              communityOwnerId={communityOwnerId}
             />
           ))}
         </div>

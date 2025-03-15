@@ -11,7 +11,7 @@ import PublicationPage from './pages/PublicationPage/PublicationPage';
 import CommunityPage from './pages/CommunityPage/CommunityPage';
 import SearchPageMain from './pages/SearchPage/SearchPageMain';
 import UserPage from './pages/UserPage/UserPage';
-import RightSidebar from './components/RightSideBar/RightSideBar'; 
+import RightSidebar from './components/RightSideBar/RightSideBar';
 
 function App() {
   return (
@@ -24,7 +24,7 @@ function App() {
             <Routes>
               <Route exact path="/" element={<HomePage />} />
               <Route path="/profile" element={<ProtectedRoute element={ProfileMain} />} />
-              <Route path="/create-publication" element={<CreatePublication />} />
+              <Route path="/create-publication" element={<ProtectedRoute element={CreatePublication} />} />
               <Route path="/publication/:slug" element={<PublicationPage />} />
               <Route path="/community/:slug" element={<CommunityPage />} />
               <Route path="/user/:id" element={<UserPage />} />

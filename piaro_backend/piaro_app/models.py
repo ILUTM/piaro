@@ -139,17 +139,21 @@ class Publication(models.Model):
         
 
 class Comment(models.Model):
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='comments')
+    parent_comment = models.ForeignKey(
+        'self', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='replies'
+    )
     text = models.TextField()
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
-    parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
     date_posted = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)  
 
     def __str__(self):
-        return f'Comment by {self.author} on {self.date_posted}'
-
-    class Meta:
-        ordering = ['-date_posted']
+        return f"Comment by {self.author.username} on {self.publication.title}"
 
 
 class Subscription(models.Model):

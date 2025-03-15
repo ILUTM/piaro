@@ -74,6 +74,7 @@ const PublicationPage = ({ contentTypeId }) => {
   const handleCommunityClick = () => {
     navigate(`/community/${publication.community_slug}`);
   };
+  
 
   if (!publication) {
     return <p>Loading...</p>;

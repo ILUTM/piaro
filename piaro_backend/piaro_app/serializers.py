@@ -119,20 +119,32 @@ class PublicationSerializer(serializers.ModelSerializer):
                 return 'like' if like.is_like == Like.LIKE else 'dislike'
         return None
 
+# serializers.py
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.ReadOnlyField(source='author.username')
+    author = serializers.SerializerMethodField()
     publication = serializers.PrimaryKeyRelatedField(queryset=Publication.objects.all())
-    #used to establish relation between a comment and it's parrent
     parent_comment = serializers.PrimaryKeyRelatedField(queryset=Comment.objects.all(), required=False, allow_null=True)
-    #Used to serialize nested replies
     replies = serializers.SerializerMethodField()
     publication_slug = serializers.ReadOnlyField(source='publication.slug')
-    
+
     class Meta:
         model = Comment
-        fields = ('id', 'text', 'author', 'publication', 'parent_comment', 'date_posted', 'replies', 'publication_slug')
+        fields = ('id', 'text', 'author', 'publication', 'parent_comment', 'date_posted', 'replies', 'publication_slug', 'is_deleted')
+
+    def get_author(self, obj):
+        # Return "Deleted User" if the author is deleted
+        if obj.is_deleted or not obj.author:
+            return "Deleted User"
+        return obj.author.username
+
+    def get_text(self, obj):
+        # Return a placeholder message if the comment is deleted
+        if obj.is_deleted:
+            return "This comment was deleted."
+        return obj.text
 
     def get_replies(self, obj):
+        # Recursively serialize replies
         if obj.replies.exists():
             return CommentSerializer(obj.replies.all(), many=True).data
         return []

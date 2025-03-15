@@ -133,12 +133,11 @@ const CommunityPage = () => {
     <div className="page-wrapper">
       {community ? (
         <>
-          <img src={community.photo} alt={`${community.name}`} className="community-photo" />
           <div className="community-header">
-            <h2>{community.name}</h2>
+            <img src={community.photo} alt={`${community.name}`} className="community-photo" />
             <div className="subscription-buttons">
               {isSubscribed ? (
-                <button onClick={handleUnsubscribe}>Subscribed</button>
+                <button onClick={handleUnsubscribe}>Unsubscribe</button>
               ) : (
                 <button onClick={handleSubscribe}>Subscribe</button>
               )}
@@ -147,7 +146,10 @@ const CommunityPage = () => {
               </button>
             </div>
           </div>
-          <p>{community.description}</p>
+          <div className="community-header-content">
+            <h2>{community.name}</h2>
+            <p>{community.description}</p>
+          </div>
         </>
       ) : (
         <p>Loading community details...</p>

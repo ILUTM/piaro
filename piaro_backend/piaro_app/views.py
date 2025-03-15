@@ -10,18 +10,18 @@ from django.utils.timezone import now
 from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import viewsets, status
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework_simplejwt.exceptions import TokenError 
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.views import APIView
 from .utils import HandleImagesInContent, CreateResponse
 from .models import Hashtag, Community, Publication, Comment, Subscription, User, Like, Collection
 from .serializers import HashtagSerializer, CommunitySerializer, PublicationSerializer, CommentSerializer, SubscriptionSerializer, UserRegistrationSerializer, UserSerializer, LoginSerializer, LikeSerializer, CollectionSerializer
-
+from .permissions import IsAdminOrCommunityCreator
 
 # BLOCK OF USER VIEWSETS
 #=====================================================================
@@ -408,6 +408,12 @@ class PublicationViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['delete'], permission_classes=[IsAdminOrCommunityCreator])
+    def delete_publication(self, request, pk=None):
+        publication = get_object_or_404(Publication, pk=pk)
+        publication.delete()
+        return Response({"detail": "Publication deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -458,6 +464,18 @@ class CommentViewSet(viewsets.ModelViewSet):
         comments = Comment.objects.filter(publication=publication, parent_comment__isnull=True).prefetch_related('replies')
         serializer = self.get_serializer(comments, many=True)
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['delete'], permission_classes=[IsAdminOrCommunityCreator])
+    def delete_comment(self, request, pk=None):
+        comment = get_object_or_404(Comment, pk=pk)
+        
+        # Mark the comment as deleted instead of actually deleting it
+        comment.text = "This comment was deleted."
+        comment.is_deleted = True
+        comment.author = None  # Optionally remove the author reference
+        comment.save()
+        
+        return Response({"detail": "Comment marked as deleted."}, status=status.HTTP_200_OK)
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):

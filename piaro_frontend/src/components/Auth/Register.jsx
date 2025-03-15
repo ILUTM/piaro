@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import styles from '../../sharedStyles/Auth.module.css';
+import { useAuth } from '../AuthContext/AuthContext';
 
 const Register = ({ onClose }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const { login } = useAuth();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -24,14 +26,16 @@ const Register = ({ onClose }) => {
         password: password,
       }),
     })
-    .then(data => {
-      console.log('Registration successful', data);
-      onClose();
-    })
-    .catch(error => {
-      console.error('There was an error registering!', error);
-      setError('Registration failed. Please try again');
-    });
+      .then((response) => response.json())
+      .then((data) => {
+        console.log('Registration successful', data);
+        login(data);
+        onClose();
+      })
+      .catch((error) => {
+        console.error('There was an error registering!', error);
+        setError('Registration failed. Please try again');
+      });
   };
 
   return ReactDOM.createPortal(

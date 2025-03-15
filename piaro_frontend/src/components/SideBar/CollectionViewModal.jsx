@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 const CollectionViewModal = ({ collection, onClose, onRemovePublication }) => {
   const navigate = useNavigate();
 
-  const handlePublicationClick = (id) => {
-    navigate(`/publication/${id}`);
+  const handlePublicationClick = (slug) => {
+    navigate(`/publication/${slug}`);
   };
 
   const handleRemovePublication = (publicationId) => {
@@ -26,7 +26,7 @@ const CollectionViewModal = ({ collection, onClose, onRemovePublication }) => {
           <ul>
             {collection.publications.map((publication) => (
               <li key={publication.id} className={styles.publicationItem}>
-                <div onClick={() => handlePublicationClick(publication.id)}>
+                <div onClick={() => handlePublicationClick(publication.slug)}>
                   <h3>{publication.title}</h3>
                   <p className={styles.meta}>
                     Posted by <strong>{publication.author}</strong> in{' '}

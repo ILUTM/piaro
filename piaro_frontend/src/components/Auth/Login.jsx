@@ -1,13 +1,14 @@
+// D:\piaro\piaro_frontend\src\components\Auth\Login.jsx
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
-import styles from '../../sharedStyles/Auth.module.css'; 
+import styles from '../../sharedStyles/Auth.module.css';
 import { useAuth } from '../AuthContext/AuthContext';
 
 const Login = ({ onClose }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { setAuthUser, setIsLoggedIn } = useAuth();
+  const { login } = useAuth();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -20,25 +21,23 @@ const Login = ({ onClose }) => {
       body: JSON.stringify({
         username: username,
         password: password,
+      }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
       })
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log('Login successful', data);
-      localStorage.setItem('token', data.access);
-      setAuthUser(data);
-      setIsLoggedIn(true);
-      onClose();
-    })
-    .catch(error => {
-      console.error('There was an error logging in!', error);
-      setError('Login failed. Please try again.');
-    });
+      .then((data) => {
+        console.log('Login successful', data);
+        login(data); // Use the login function from AuthContext
+        onClose();
+      })
+      .catch((error) => {
+        console.error('There was an error logging in!', error);
+        setError('Login failed. Please try again.');
+      });
   };
 
   return ReactDOM.createPortal(
