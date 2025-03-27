@@ -1,33 +1,34 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import PublicationListItem from '../../components/SharedElements/PublicationListItem';
-import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
+import PublicationsList from '../../components/SharedElements/PublicationsList';
+import { usePublicationLike } from '../../utils/usePublicationLike';
 import { fetchContentType, subscribe, unsubscribe, checkSubscription, toggleNotifications } from '../../utils/subscriptionUtils';
-import { fetchContentTypeId } from '../../utils/ContentTypes'; 
+import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 import '../../sharedStyles/PageCommonStyle.css';
 import '../../sharedStyles/CommunityPage.css';
 
 const CommunityPage = () => {
   const { slug } = useParams();
-  const [community, setCommunity] = useState(null);
-  const [publications, setPublications] = useState([]);
-  const [error, setError] = useState('');
-  const [pageNumber, setPageNumber] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isFetching, setIsFetching] = useState(false);
   const navigate = useNavigate();
+  const [community, setCommunity] = useState(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [sendNotifications, setSendNotifications] = useState(false);
   const [contentType, setContentType] = useState(0);
-  // contentType for publications
-  const [contentTypeId, setContentTypeId] = useState(null);
-    useEffect(() => {
-      const fetchContentType = async () => {
-        const id = await fetchContentTypeId('publication');
-        setContentTypeId(id);
-      };
-      fetchContentType();
-    }, []);
+  const [error, setError] = useState('');
+
+  const { 
+    publications, 
+    setPublications, 
+    contentTypeId, 
+    handleLikeToggle
+  } = usePublicationLike();
+
+  const [pageNumber, setPageNumber] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
+  const lastPublicationElementRef = useInfiniteScroll(hasMore, isFetching, () => {
+    setPageNumber(prev => prev + 1);
+  });
 
   const fetchCommunity = useCallback(() => {
     fetch(`http://127.0.0.1:8000/api/communities/details/${slug}/`, {
@@ -53,24 +54,18 @@ const CommunityPage = () => {
   const fetchCommunityPublications = useCallback(async (page) => {
     try {
       setIsFetching(true);
-      const response = await fetch(`http://127.0.0.1:8000/api/publications/by-community/${slug}/?page=${page}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+      const response = await fetch(`http://127.0.0.1:8000/api/publications/by-community/${slug}/?page=${page}`);
+      if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setPublications(prev => [...prev, ...data.results]);
       setHasMore(data.next !== null);
     } catch (error) {
-      console.error('There was an error fetching publications', error);
+      setError('Failed to fetch publications');
+      console.error('Error:', error);
     } finally {
       setIsFetching(false);
     }
-  }, [slug]);
+  }, [slug, setPublications, setIsFetching, setHasMore]);
 
   const checkSubscriptionStatus = useCallback(async () => {
     try {
@@ -111,8 +106,6 @@ const CommunityPage = () => {
     }
   };
 
-  const lastPublicationElementRef = useInfiniteScroll(hasMore, isFetching, setPageNumber);
-
   const navigateToCreatePublication = () => {
     navigate('/create-publication', { state: { community } });
   };
@@ -121,7 +114,7 @@ const CommunityPage = () => {
     fetchCommunity();
     fetchCommunityPublications(pageNumber);
     fetchContentType('community').then(setContentType);
-  }, [slug, pageNumber, fetchCommunityPublications, fetchCommunity]);
+  }, [slug, pageNumber]);
 
   useEffect(() => {
     if (community && contentType) {
@@ -160,13 +153,12 @@ const CommunityPage = () => {
       <div className="publication-list-wrapper">
         <ul className="publications-list">
           {publications.map((publication, index) => (
-            <PublicationListItem
-              key={publication.id}
-              publication={publication}
-              index={index}
-              lastPublicationElementRef={index === publications.length - 1 ? lastPublicationElementRef : null}
-              contentTypeId={contentTypeId}
-            />
+            <PublicationsList
+            publications={publications}
+            lastPublicationElementRef={lastPublicationElementRef}
+            contentTypeId={contentTypeId}
+            onLikeToggle={handleLikeToggle}
+          />
           ))}
         </ul>
       </div>

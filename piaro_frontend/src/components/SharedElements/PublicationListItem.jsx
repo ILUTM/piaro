@@ -11,6 +11,7 @@ const PublicationListItem = ({
   index,
   lastPublicationElementRef,
   contentTypeId, 
+  onLikeToggle
 }) => {
   const [showMore, setShowMore] = useState(false);
   const [visibleHashtags, setVisibleHashtags] = useState([]);
@@ -150,9 +151,14 @@ const PublicationListItem = ({
           <LikeComponent
             contentType={contentTypeId}
             objectId={publication.id}
-            initialLikes={likes_count}
-            initialDislikes={dislikes_count}
-            initialUserLikeStatus={user_like_status}
+            initialLikes={publication.likes_count}
+            initialDislikes={publication.dislikes_count}
+            initialUserLikeStatus={publication.user_like_status}
+            onLikeChange={(id, likes, dislikes, status) => {
+              if (onLikeToggle) {
+                onLikeToggle(id, likes, dislikes, status);
+              }
+            }}
           />
         </div>
         <button onClick={handleAddToCollection}>Add to Collection</button>

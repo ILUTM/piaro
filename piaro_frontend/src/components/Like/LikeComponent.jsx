@@ -1,44 +1,79 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { toggleLike, fetchLikeSummary } from './likeUtils';
 import '../../sharedStyles/LikeComponent.css';
 
-const LikeComponent = ({ contentType, objectId, initialLikes, initialDislikes, initialUserLikeStatus }) => {
-  const [likeSummary, setLikeSummary] = useState({ likes: initialLikes, dislikes: initialDislikes });
-  const [likeStatus, setLikeStatus] = useState(initialUserLikeStatus); 
-  const [error, setError] = useState(null);
+const LikeComponent = ({ 
+  contentType, 
+  objectId, 
+  initialLikes, 
+  initialDislikes, 
+  initialUserLikeStatus,
+  onLikeChange 
+}) => {
+  const [likeSummary, setLikeSummary] = useState({ 
+    likes: initialLikes, 
+    dislikes: initialDislikes 
+  });
+  const [likeStatus, setLikeStatus] = useState(initialUserLikeStatus);
   const [loading, setLoading] = useState(false);
 
+  // Refresh like status when props change
   useEffect(() => {
-    const fetchSummary = async () => {
-      try {
-        const data = await fetchLikeSummary(contentType, objectId);
-        setLikeSummary({ likes: data.likes, dislikes: data.dislikes });
-        setLikeStatus(data.user_like_status);
-      } catch (error) {
-        console.error('Error fetching like summary:', error);
-        setError('Failed to fetch like summary');
-      }
-    };
-
-    fetchSummary();
-  }, [contentType, objectId]);
+    setLikeSummary({
+      likes: initialLikes,
+      dislikes: initialDislikes
+    });
+    setLikeStatus(initialUserLikeStatus);
+  }, [initialLikes, initialDislikes, initialUserLikeStatus]);
 
   const handleToggleLike = async (action) => {
-    if (loading) return; 
+    if (loading || !contentType) return;
     setLoading(true);
-    setError(null); 
 
     try {
-      await toggleLike(contentType, objectId, action);
+      // Optimistic update
+      const newStatus = action === 'like' ? 'liked' : 'disliked';
+      const wasLiked = likeStatus === 'liked';
+      const wasDisliked = likeStatus === 'disliked';
+      
+      let newLikes = likeSummary.likes;
+      let newDislikes = likeSummary.dislikes;
+      
+      if (action === 'like') {
+        newLikes = wasLiked ? newLikes - 1 : newLikes + 1;
+        newDislikes = wasDisliked ? newDislikes - 1 : newDislikes;
+      } else {
+        newDislikes = wasDisliked ? newDislikes - 1 : newDislikes + 1;
+        newLikes = wasLiked ? newLikes - 1 : newLikes;
+      }
+      
+      setLikeSummary({ likes: newLikes, dislikes: newDislikes });
+      const finalStatus = newStatus === likeStatus ? null : newStatus;
+      setLikeStatus(finalStatus);
+      
+      // Notify parent immediately
+      if (onLikeChange) {
+        onLikeChange(objectId, newLikes, newDislikes, finalStatus);
+      }
 
-      const data = await fetchLikeSummary(contentType, objectId);
-      setLikeSummary({ likes: data.likes, dislikes: data.dislikes });
-      setLikeStatus(data.user_like_status);
+      // Then make the API call
+      await toggleLike(contentType, objectId, action);
+      
+      // Verify with server after update
+      const updatedSummary = await fetchLikeSummary(contentType, objectId);
+      setLikeSummary(updatedSummary);
+      if (onLikeChange) {
+        onLikeChange(objectId, updatedSummary.likes, updatedSummary.dislikes, finalStatus);
+      }
     } catch (error) {
-      setError('Failed to toggle like/dislike');
-      console.error('Error toggling like/dislike:', error);
+      // Revert on error
+      setLikeSummary({ likes: initialLikes, dislikes: initialDislikes });
+      setLikeStatus(initialUserLikeStatus);
+      if (onLikeChange) {
+        onLikeChange(objectId, initialLikes, initialDislikes, initialUserLikeStatus);
+      }
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -60,7 +95,6 @@ const LikeComponent = ({ contentType, objectId, initialLikes, initialDislikes, i
         <div className="broken-heart-icon"></div>
         <span>{likeSummary.dislikes}</span>
       </div>
-      {error && <p className="error-message">{error}</p>}
     </div>
   );
 };

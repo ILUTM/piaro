@@ -1,21 +1,33 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
-import PublicationListItem from '../../components/SharedElements/PublicationListItem';
-import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
+import { useParams, useNavigate } from 'react-router-dom';
+import PublicationsList from '../../components/SharedElements/PublicationsList';
+import { usePublicationLike } from '../../utils/usePublicationLike';
 import { fetchContentType, subscribe, unsubscribe, checkSubscription, toggleNotifications } from '../../utils/subscriptionUtils';
+import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 import '../../sharedStyles/UserPage.css';
-import defaultProfilePhoto from '../../static/default_profile_photo.png'; // Import the default profile photo
+import defaultProfilePhoto from '../../static/default_profile_photo.png';
 
 const UserPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [publications, setPublications] = useState([]);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isFetching, setIsFetching] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [sendNotifications, setSendNotifications] = useState(false);
   const [contentType, setContentType] = useState(0);
+
+  const { 
+    publications, 
+    setPublications, 
+    contentTypeId, 
+    handleLikeToggle
+  } = usePublicationLike();
+
+  const [pageNumber, setPageNumber] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
+  const lastPublicationElementRef = useInfiniteScroll(hasMore, isFetching, () => {
+    setPageNumber(prev => prev + 1);
+  });
 
   const fetchUserData = useCallback(() => {
     fetch(`http://127.0.0.1:8000/api/users/${id}/get_user/`, {
@@ -41,24 +53,17 @@ const UserPage = () => {
   const fetchUserPublications = useCallback(async (page) => {
     try {
       setIsFetching(true);
-      const response = await fetch(`http://127.0.0.1:8000/api/publications/by-user/${id}/?page=${page}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+      const response = await fetch(`http://127.0.0.1:8000/api/publications/by-user/${id}/?page=${page}`);
+      if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setPublications(prev => [...prev, ...data.results]);
       setHasMore(data.next !== null);
     } catch (error) {
-      console.error('There was an error fetching publications', error);
+      console.error('Error:', error);
     } finally {
       setIsFetching(false);
     }
-  }, [id]);
+  }, [id, setPublications]);
 
   const checkSubscriptionStatus = useCallback(async () => {
     try {
@@ -99,13 +104,11 @@ const UserPage = () => {
     }
   };
 
-  const lastPublicationElementRef = useInfiniteScroll(hasMore, isFetching, setPageNumber);
-
   useEffect(() => {
     fetchUserData();
     fetchUserPublications(pageNumber);
     fetchContentType('user').then(setContentType);
-  }, [id, pageNumber, fetchUserPublications, fetchUserData]);
+  }, [id, pageNumber]);
 
   useEffect(() => {
     if (user && contentType) {
@@ -143,12 +146,12 @@ const UserPage = () => {
           <h2>Publications</h2>
           <ul className="publications-list">
             {publications.map((publication, index) => (
-              <PublicationListItem
-                key={publication.id}
-                publication={publication}
-                index={index}
-                lastPublicationElementRef={index === publications.length - 1 ? lastPublicationElementRef : null}
-              />
+              <PublicationsList
+              publications={publications}
+              lastPublicationElementRef={lastPublicationElementRef}
+              contentTypeId={contentTypeId}
+              onLikeToggle={handleLikeToggle}
+            />
             ))}
           </ul>
         </>

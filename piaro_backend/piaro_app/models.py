@@ -14,7 +14,11 @@ import os
 class UploadToUserDirectory:
     def __call__(self, instance, filename):
         ext = filename.split('.')[-1]
-        filename = f'{instance.id}.{ext}'
+        if instance.id:
+            filename = f'{instance.id}.{ext}'
+        else:
+            # Temporary name until instance is saved
+            filename = f'temp_{instance.username}.{ext}'
         return os.path.join('ProfilePhoto', filename)
     
     
@@ -85,7 +89,7 @@ class Hashtag(models.Model):
 
 
 class Community(models.Model):
-    creator = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, null=False, related_name='created_communities')
     name = models.CharField(max_length=50, unique=True)
     photo = models.ImageField(upload_to=UploadToCommunityDirectory(), null=True, blank=True)
     description = models.TextField()
@@ -94,13 +98,16 @@ class Community(models.Model):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
-            # Ensure the slug is unique
-            original_slug = self.slug
-            counter = 1
-            while Community.objects.filter(slug=self.slug).exists():
-                self.slug = f"{original_slug}-{counter}"
-                counter += 1
+            self.slug = self._get_next_slug()
         super().save(*args, **kwargs)
+
+    def _get_next_slug(self):
+        original_slug = slug = self.slug
+        counter = 1
+        while Community.objects.filter(slug=slug).exists():
+            slug = f"{original_slug}-{counter}"
+            counter += 1
+        return slug
 
     def __str__(self):
         return self.name
@@ -124,14 +131,17 @@ class Publication(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.title)
-            # Ensure the slug is unique
-            original_slug = self.slug
-            counter = 1
-            while Publication.objects.filter(slug=self.slug).exists():
-                self.slug = f"{original_slug}-{counter}"
-                counter += 1
+            self.slug = self._get_next_slug()
         super().save(*args, **kwargs)
+
+    def _get_next_slug(self):
+        original_slug = slug = slugify(self.title)
+        counter = 1
+        while Publication.objects.filter(slug=slug).exists():
+            slug = f"{original_slug}-{counter}"
+            counter += 1
+        return slug
+    
     class Meta:
         ordering = ['-date_posted']
         verbose_name = 'Publication'
@@ -153,7 +163,9 @@ class Comment(models.Model):
     is_deleted = models.BooleanField(default=False)  
 
     def __str__(self):
-        return f"Comment by {self.author.username} on {self.publication.title}"
+        if self.is_deleted:
+            return "Deleted comment"
+        return f"Comment by {self.author.username if self.author else 'Anonymous'} on {self.publication.title}"
 
 
 class Subscription(models.Model):
@@ -185,6 +197,9 @@ class Like(models.Model):
     
     class Meta:
         unique_together = ('user', 'content_type', 'object_id')
+        indexes = [
+            models.Index(fields=['content_type', 'object_id']),
+        ]
 
 
 class Collection(models.Model):

@@ -20,15 +20,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username', 'password')
 
-    def create(self, validated_data):
-        password = validated_data.pop('password', None)
-        user = User.objects.create_user(username=validated_data['username'])
-        
-        # Set the password for the user
-        if password:
-            user.set_password(password)
-            user.save()
+    def validate_username(self, value):
+        if User.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError("A user with that username already exists.")
+        return value
 
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            password=validated_data['password'],
+            email=validated_data.get('email')
+        )
         return user
 
 
@@ -107,16 +109,22 @@ class PublicationSerializer(serializers.ModelSerializer):
         ).count()
 
     def get_user_like_status(self, obj):
-        # Get the current user's like status for the publication
         request = self.context.get('request')
         if request and request.user.is_authenticated:
-            like = Like.objects.filter(
-                user=request.user,
-                content_type=ContentType.objects.get_for_model(Publication),
-                object_id=obj.id
-            ).first()
-            if like:
-                return 'like' if like.is_like == Like.LIKE else 'dislike'
+            # Use prefetched data if available
+            if hasattr(obj, 'user_likes'):
+                user_likes = obj.user_likes
+                if user_likes:
+                    return 'liked' if user_likes[0].is_like == Like.LIKE else 'disliked'
+            else:
+                # Fallback to query if prefetch wasn't done
+                like = Like.objects.filter(
+                    user=request.user,
+                    content_type=ContentType.objects.get_for_model(Publication),
+                    object_id=obj.id
+                ).first()
+                if like:
+                    return 'liked' if like.is_like == Like.LIKE else 'disliked'
         return None
 
 # serializers.py
