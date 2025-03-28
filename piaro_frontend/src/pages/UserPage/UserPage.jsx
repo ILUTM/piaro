@@ -1,19 +1,18 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import PublicationsList from '../../components/SharedElements/PublicationsList';
 import { usePublicationLike } from '../../utils/usePublicationLike';
 import { fetchContentType, subscribe, unsubscribe, checkSubscription, toggleNotifications } from '../../utils/subscriptionUtils';
-import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 import '../../sharedStyles/UserPage.css';
 import defaultProfilePhoto from '../../static/default_profile_photo.png';
 
 const UserPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [sendNotifications, setSendNotifications] = useState(false);
   const [contentType, setContentType] = useState(0);
+  const [error, setError] = useState('');
 
   const { 
     publications, 
@@ -25,9 +24,11 @@ const UserPage = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
-  const lastPublicationElementRef = useInfiniteScroll(hasMore, isFetching, () => {
-    setPageNumber(prev => prev + 1);
-  });
+  const loadMore = useCallback(() => {
+    if (hasMore && !isFetching) {
+      setPageNumber(prev => prev + 1);
+    }
+  }, [hasMore, isFetching]);
 
   const fetchUserData = useCallback(() => {
     fetch(`http://127.0.0.1:8000/api/users/${id}/get_user/`, {
@@ -56,9 +57,10 @@ const UserPage = () => {
       const response = await fetch(`http://127.0.0.1:8000/api/publications/by-user/${id}/?page=${page}`);
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
-      setPublications(prev => [...prev, ...data.results]);
+      setPublications(prev => page === 1 ? data.results : [...prev, ...data.results]);
       setHasMore(data.next !== null);
     } catch (error) {
+      setError('Failed to fetch user publications');
       console.error('Error:', error);
     } finally {
       setIsFetching(false);
@@ -145,14 +147,14 @@ const UserPage = () => {
           </div>
           <h2>Publications</h2>
           <ul className="publications-list">
-            {publications.map((publication, index) => (
-              <PublicationsList
+            <PublicationsList
               publications={publications}
-              lastPublicationElementRef={lastPublicationElementRef}
+              onLoadMore={loadMore}
+              hasMore={hasMore}
+              isFetching={isFetching}
               contentTypeId={contentTypeId}
               onLikeToggle={handleLikeToggle}
             />
-            ))}
           </ul>
         </>
       ) : (

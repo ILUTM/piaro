@@ -444,8 +444,9 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def my_comments(self, request):
-        comments = self._get_base_queryset().filter(author=request.user)
-        return self._paginated_response(comments)  
+        comments = Comment.objects.filter(author=request.user)
+        serializer = self.get_serializer(comments, many=True)
+        return Response(serializer.data)  
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def add_comment(self, request, pk=None):
@@ -475,11 +476,12 @@ class CommentViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def get_comments_by_publication(self, request, pk=None):
-        comments = self._get_base_queryset().filter(
-            publication_id=pk,
-            parent_comment__isnull=True
-        )
-        return self._paginated_response(comments)
+        publication = get_object_or_404(Publication, pk=pk)
+        #parent_comment__isnull=True make func to fetch only top-level comment
+        #.prefetch_related('replies') caches all replies. reduces the number of queries
+        comments = Comment.objects.filter(publication=publication, parent_comment__isnull=True).prefetch_related('replies')
+        serializer = self.get_serializer(comments, many=True)
+        return Response(serializer.data)
     
     @action(detail=True, methods=['delete'], permission_classes=[IsAdminOrCommunityCreator])
     def delete_comment(self, request, pk=None):

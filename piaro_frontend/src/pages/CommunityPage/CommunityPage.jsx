@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import PublicationsList from '../../components/SharedElements/PublicationsList';
 import { usePublicationLike } from '../../utils/usePublicationLike';
 import { fetchContentType, subscribe, unsubscribe, checkSubscription, toggleNotifications } from '../../utils/subscriptionUtils';
-import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 import '../../sharedStyles/PageCommonStyle.css';
 import '../../sharedStyles/CommunityPage.css';
 
@@ -26,9 +25,11 @@ const CommunityPage = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
-  const lastPublicationElementRef = useInfiniteScroll(hasMore, isFetching, () => {
-    setPageNumber(prev => prev + 1);
-  });
+  const loadMore = useCallback(() => {
+    if (hasMore && !isFetching) {
+      setPageNumber(prev => prev + 1);
+    }
+  }, [hasMore, isFetching]);
 
   const fetchCommunity = useCallback(() => {
     fetch(`http://127.0.0.1:8000/api/communities/details/${slug}/`, {
@@ -57,7 +58,7 @@ const CommunityPage = () => {
       const response = await fetch(`http://127.0.0.1:8000/api/publications/by-community/${slug}/?page=${page}`);
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
-      setPublications(prev => [...prev, ...data.results]);
+      setPublications(prev => page === 1 ? data.results : [...prev, ...data.results]);
       setHasMore(data.next !== null);
     } catch (error) {
       setError('Failed to fetch publications');
@@ -65,7 +66,7 @@ const CommunityPage = () => {
     } finally {
       setIsFetching(false);
     }
-  }, [slug, setPublications, setIsFetching, setHasMore]);
+  }, [slug, setPublications]);
 
   const checkSubscriptionStatus = useCallback(async () => {
     try {
@@ -151,16 +152,14 @@ const CommunityPage = () => {
       <h2>Publications in Community</h2>
       {error && <p className="error">{error}</p>}
       <div className="publication-list-wrapper">
-        <ul className="publications-list">
-          {publications.map((publication, index) => (
-            <PublicationsList
-            publications={publications}
-            lastPublicationElementRef={lastPublicationElementRef}
-            contentTypeId={contentTypeId}
-            onLikeToggle={handleLikeToggle}
-          />
-          ))}
-        </ul>
+        <PublicationsList
+          publications={publications}
+          onLoadMore={loadMore}
+          hasMore={hasMore}
+          isFetching={isFetching}
+          contentTypeId={contentTypeId}
+          onLikeToggle={handleLikeToggle}
+        />
       </div>
     </div>
   );

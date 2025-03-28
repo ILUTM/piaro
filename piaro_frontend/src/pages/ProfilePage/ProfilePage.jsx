@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../components/AuthContext/AuthContext';
-import default_profile_photo from '../../static/default_profile_photo.png'
+import default_profile_photo from '../../static/default_profile_photo.png';
 import '../../sharedStyles/ProfilePage.css';
 
 const ProfilePage = () => {
-  const { authUser, setAuthUser } = useAuth();
+  const { authUser, setAuthUser, authFetch } = useAuth(); // Get authFetch from context
   const [userData, setUserData] = useState(authUser);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -12,159 +12,125 @@ const ProfilePage = () => {
   const [error, setError] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
 
-  const fetchUserData = useCallback(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetch('http://127.0.0.1:8000/api/users/me/', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
+  const fetchUserData = useCallback(async () => {
+    try {
+      const response = await authFetch('/users/me/');
+      if (response.ok) {
+        const data = await response.json();
         setUserData(data);
-      })
-      .catch(error => {
-        console.error('There was an error fetching the user data!', error);
-      });
-    }
-  },[])
-
-  const handleFieldUpdate = (field) => {
-    const token = localStorage.getItem('token');
-    fetch('http://127.0.0.1:8000/api/users/update_field/', { 
-      method: 'PUT',
-      headers: { 
-        'Authorization': `Bearer ${token}`, 
-        'Content-Type': 'application/json',
-      }, 
-      body: JSON.stringify({ 
-        field: field, 
-        value: userData[field] 
-    }),
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not OK');
       }
-      return response.json();
-    })
-    .then(data => {
-      setAuthUser(data);
-      setUserData(data);
-      alert('Profile updated successfully');
-    })
-    .catch(error => { 
-      console.error('There was an error updating the profile!');
-      setError('Update failed. so sorry :(')
-    });
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  }, [authFetch]);
+
+  const handleFieldUpdate = async (field) => {
+    try {
+      const response = await authFetch('/users/update_field/', {
+        method: 'PUT',
+        body: JSON.stringify({
+          field: field,
+          value: userData[field]
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAuthUser(data);
+        setUserData(data);
+        alert('Profile updated successfully');
+      } else {
+        throw new Error('Update failed');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setError('Update failed. Please try again.');
+    }
   };
 
   const handlePhotoUpdate = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
     const formData = new FormData();
     formData.append('profile_photo', userData.profile_photo);
-    fetch('http://127.0.0.1:8000/api/users/update_profile_photo/', {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
+
+    try {
+      const response = await authFetch('/users/update_profile_photo/', {
+        method: 'PUT',
+        body: formData,
+        headers: {} // Let authFetch handle headers
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAuthUser(data);
+        setUserData(data);
+        alert('Profile photo updated successfully');
+      } else {
+        throw new Error('Photo update failed');
       }
-      return response.json();
-    })
-    .then(data => {
-      setAuthUser (data); 
-      setUserData(data);
-      alert('Profile photo updated successfully');
-    })
-    .catch(error => {
-      console.error('There was an error updating the profile photo!', error);
+    } catch (error) {
+      console.error('Error updating photo:', error);
       setError('Photo update failed. Please try again.');
-    });
+    }
   };
 
-  const handleChangePassword = (e) => {
+  const handleChangePassword = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetch('http://127.0.0.1:8000/api/users/change_password/', {
+    try {
+      const response = await authFetch('/users/change_password/', {
         method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           old_password: oldPassword,
           new_password: newPassword,
           confirm_new_password: confirmNewPassword,
         })
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
+      });
+
+      if (response.ok) {
+        const data = await response.json();
         if (data.status === 'Password changed successfully') {
           alert('Password changed successfully');
           setOldPassword('');
           setNewPassword('');
           setConfirmNewPassword('');
         } else {
-          throw new Error('Password change failed')
+          throw new Error(data.message || 'Password change failed');
         }
-      })
-      .catch(error => {
-        console.error('There was an error changing the password!', error);
-        setError('Password change failed. Please try again.');
-      });
+      } else {
+        throw new Error('Password change failed');
+      }
+    } catch (error) {
+      console.error('Error changing password:', error);
+      setError('Password change failed. Please try again.');
     }
   };
 
-  const handleVerifyCode = () => {
-    const token = localStorage.getItem('token');
-    fetch('http://127.0.0.1:8000/api/users/verify_tg/', {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        code: verificationCode,
-      }),
-    })
-    .then(response => {
-      if(!response.ok) {
-        throw new Error('Network response was not OK');
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data.status === 'success') {
-        alert('Telegram contact verified successfully');
-        setAuthUser({ ...userData, tg_contact: data.tg_contact});
+  const handleVerifyCode = async () => {
+    try {
+      const response = await authFetch('/users/verify_tg/', {
+        method: 'PUT',
+        body: JSON.stringify({
+          code: verificationCode,
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === 'success') {
+          alert('Telegram contact verified successfully');
+          setAuthUser({ ...userData, tg_contact: data.tg_contact });
+        } else {
+          throw new Error(data.message || 'Verification failed');
+        }
       } else {
-        alert('Verification failed. please try again.');
+        throw new Error('Verification failed');
       }
-    })
-    .catch(error => {
-      console.error('There was an error verifying the telegram contact!', error);
-      setError('Verification failed. Please try again.')
-    });
+    } catch (error) {
+      console.error('Error verifying Telegram:', error);
+      setError('Verification failed. Please try again.');
+    }
   };
-  
+
   useEffect(() => {
     fetchUserData();
   }, [fetchUserData]);

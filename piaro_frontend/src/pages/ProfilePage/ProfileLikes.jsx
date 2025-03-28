@@ -1,41 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicationListItem from '../../components/SharedElements/PublicationListItem';
-import { fetchUserLikes } from '../../components/Like/likeUtils';
-import '../../sharedStyles/ProfilePage.css';
+import '../../sharedStyles/PageCommonStyle.css';
 
 const ProfileLikes = () => {
-    const [publicationLikes, setPublicationLikes] = useState([]);
-    const [commentLikes, setCommentLikes] = useState([]);
+    const [publications, setPublications] = useState([]);
+    const [comments, setComments] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchLikes = async () => {
+        const fetchLikedContent = async () => {
             try {
                 setLoading(true);
-                const data = await fetchUserLikes();
+                const token = localStorage.getItem('token');
                 
-                // Separate publication and comment likes
-                const pubs = data.filter(like => 
-                    like.content_type.model === 'publication' && like.content_object
-                );
-                const comments = data.filter(like => 
+                // Fetch liked publications
+                const pubsResponse = await fetch('http://127.0.0.1:8000/api/publications/liked_publications/', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!pubsResponse.ok) throw new Error('Failed to fetch liked publications');
+                
+                const publicationsData = await pubsResponse.json();
+                setPublications(publicationsData.results || publicationsData);
+
+                // Fetch liked comments
+                const commentsResponse = await fetch('http://127.0.0.1:8000/api/likes/my_likes/', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!commentsResponse.ok) throw new Error('Failed to fetch liked comments');
+                
+                const allLikes = await commentsResponse.json();
+                const commentLikes = allLikes.filter(like => 
                     like.content_type.model === 'comment' && like.content_object
                 );
-                
-                setPublicationLikes(pubs);
-                setCommentLikes(comments);
+                setComments(commentLikes);
+
             } catch (error) {
-                console.error('Error fetching likes:', error);
-                setError('Failed to load your likes. Please try again.');
+                console.error('Error fetching liked content:', error);
+                setError('Failed to load your liked content. Please try again.');
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchLikes();
+        fetchLikedContent();
     }, []);
 
     const handlePublicationClick = (slug) => {
@@ -47,71 +63,36 @@ const ProfileLikes = () => {
     };
 
     if (loading) {
-        return <div>Loading your likes...</div>;
+        return <div className="page-wrapper">Loading your liked content...</div>;
     }
 
     if (error) {
-        return <div className="error-message">{error}</div>;
+        return <div className="page-wrapper error-message">{error}</div>;
     }
 
     return (
-        <div className="profile-likes-container">
+        <div className="page-wrapper">
             <h2>Your Liked Content</h2>
             
             <div className="likes-section">
-                <h3>Publications ({publicationLikes.length})</h3>
-                {publicationLikes.length > 0 ? (
-                    <ul className="publications-list">
-                        {publicationLikes.map((like) => (
-                            <PublicationListItem
-                                key={like.id}
-                                publication={like.content_object}
-                                onPublicationClick={() => 
-                                    handlePublicationClick(like.content_object.slug)
-                                }
-                                showLikeButton={false}
-                            />
-                        ))}
-                    </ul>
+                <h3>Publications ({publications.length})</h3>
+                {publications.length > 0 ? (
+                    <div className="publication-list-wrapper">
+                        <ul className="publications-list">
+                            {publications.map((publication) => (
+                                <PublicationListItem
+                                    key={publication.id}
+                                    publication={publication}
+                                    onPublicationClick={() => 
+                                        handlePublicationClick(publication.slug)
+                                    }
+                                    showLikeButton={false}
+                                />
+                            ))}
+                        </ul>
+                    </div>
                 ) : (
                     <p>No liked publications yet</p>
-                )}
-            </div>
-
-            <div className="likes-section">
-                <h3>Comments ({commentLikes.length})</h3>
-                {commentLikes.length > 0 ? (
-                    <ul className="comments-list">
-                        {commentLikes.map((like) => (
-                            <li 
-                                key={like.id} 
-                                className="comment-item"
-                                onClick={() => 
-                                    handleCommentClick(like.content_object.publication.slug)
-                                }
-                            >
-                                <div className="comment-header">
-                                    <span className="comment-author">
-                                        {like.content_object.author || 'Deleted User'}
-                                    </span>
-                                    <span className="comment-date">
-                                        {new Date(like.content_object.date_posted).toLocaleString()}
-                                    </span>
-                                </div>
-                                <p className="comment-text">
-                                    {like.content_object.is_deleted ? 
-                                        'This comment was deleted' : 
-                                        like.content_object.text
-                                    }
-                                </p>
-                                <div className="comment-context">
-                                    On publication: {like.content_object.publication.title}
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No liked comments yet</p>
                 )}
             </div>
         </div>

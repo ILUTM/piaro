@@ -1,13 +1,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import PublicationsList from '../../components/SharedElements/PublicationsList';
 import { usePublicationLike } from '../../utils/usePublicationLike';
-import useInfiniteScroll from '../../components/SharedElements/useInfiniteScroll';
 import '../../sharedStyles/PageCommonStyle.css';
 
 const SearchPublication = () => {
   const location = useLocation();
-  const navigate = useNavigate();
+  const [error, setError] = useState('');
   
   const { 
     publications, 
@@ -19,13 +18,12 @@ const SearchPublication = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
-  const lastPublicationElementRef = useInfiniteScroll(hasMore, isFetching, () => {
-    setPageNumber(prev => prev + 1);
-  });
 
-  const goToPublication = (slug) => navigate(`/publication/${slug}`);
-  const goToUser = (id) => navigate(`/user/${id}`);
-  const goToCommunity = (slug) => navigate(`/community/${slug}`);
+  const loadMore = useCallback(() => {
+    if (hasMore && !isFetching) {
+      setPageNumber(prev => prev + 1);
+    }
+  }, [hasMore, isFetching]);
 
   const fetchPublications = useCallback(async (page) => {
     try {
@@ -39,6 +37,7 @@ const SearchPublication = () => {
       setPublications(prev => page === 1 ? data.results : [...prev, ...data.results]);
       setHasMore(data.next !== null);
     } catch (error) {
+      setError('Failed to fetch search results');
       console.error('Error:', error);
     } finally {
       setIsFetching(false);
@@ -54,39 +53,20 @@ const SearchPublication = () => {
     if (pageNumber > 1) fetchPublications(pageNumber);
   }, [pageNumber]);
 
-  const handlePublicationClick = (slug) => {
-    goToPublication(slug); 
-  };
-
-  const handleUserClick = (id) => {
-    goToUser(id); 
-  };
-
-  const handleCommunityClick = (slug) => {
-    goToCommunity(slug); 
-  };
-
   return (
     <div className="page-wrapper">
       <div className="publication-list-wrapper">
         <h2>Search Results for Publications</h2>
-        {publications.length > 0 ? (
-          <ul className="publications-list">
-            {publications.map((publication, index) => (
-              <PublicationsList
-              publications={publications}
-              lastPublicationElementRef={lastPublicationElementRef}
-              contentTypeId={contentTypeId}
-              onLikeToggle={handleLikeToggle}
-              handlePublicationClick={goToPublication}
-              handleUserClick={goToUser}
-              handleCommunityClick={goToCommunity}
-            />
-            ))}
-          </ul>
-        ) : (
-          <p>No results found.</p>
-        )}
+        {error && <p className="error">{error}</p>}
+        
+        <PublicationsList
+          publications={publications}
+          onLoadMore={loadMore}
+          hasMore={hasMore}
+          isFetching={isFetching}
+          contentTypeId={contentTypeId}
+          onLikeToggle={handleLikeToggle}
+        />
       </div>
     </div>   
   );
