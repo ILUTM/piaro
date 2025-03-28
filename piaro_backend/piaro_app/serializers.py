@@ -173,11 +173,23 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         return subscription
     
     
-class LikeSerializer(serializers.ModelSerializer): 
+class LikeSerializer(serializers.ModelSerializer):
+    publication_slug = serializers.SerializerMethodField()
     
-    class Meta: 
-        model = Like 
-        fields = ('id', 'user', 'content_type', 'object_id', 'is_like', 'date_modified')
+    class Meta:
+        model = Like
+        fields = ('id', 'user', 'content_type', 'object_id', 'is_like', 
+                 'date_modified', 'publication_slug')
+    
+    def get_publication_slug(self, obj):
+        # Only add slug for publication likes
+        if obj.content_type.model == 'publication':
+            try:
+                publication = Publication.objects.get(id=obj.object_id)
+                return publication.slug
+            except Publication.DoesNotExist:
+                return None
+        return None
         
         
 class CollectionSerializer(serializers.ModelSerializer): 

@@ -28,40 +28,45 @@ from .permissions import IsAdminOrCommunityCreator
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def _get_user_response(self, user):
+        """Helper method to format user responses consistently"""
+        return Response(self.get_serializer(user).data)
 
     def update(self, request, *args, **kwargs):
-        user = self.get_object()
-        userData = request.data
+        if 'password' in request.data:
+            request.data['password'] = make_password(request.data['password'])
+        return super().update(request, *args, **kwargs)
 
-        if 'password' in userData:
-            userData['password'] = make_password(userData['password'])
-
-        return super(UserViewSet, self).update(request, *args, **kwargs)
-
-    @action(detail=False, methods=['get','put'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get', 'put'], permission_classes=[IsAuthenticated])
     def me(self, request):
-        user = request.user
         if request.method == 'GET':
-            serializer = self.get_serializer(user)
-            return Response(serializer.data)
-        elif request.method == 'PUT':
-            serializer = self.get_serializer(user, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data)
+            return self._get_user_response(request.user)
+        
+        serializer = self.get_serializer(
+            request.user, 
+            data=request.data, 
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return self._get_user_response(request.user)
     
     @action(detail=False, methods=['put'], permission_classes=[IsAuthenticated])
     def update_field(self, request):
-        user = request.user
         field = request.data.get('field')
         value = request.data.get('value')
         
-        if field in ['email', 'contact_number'] and value:
-            setattr(user, field, value)
-            user.save()
-            serializer = self.get_serializer(user)
-            return Response(serializer.data)
-        return Response({"detail": "field not provided."}, status=400)
+        if field not in ['email', 'contact_number'] or not value:
+            return Response(
+                {"detail": "Invalid or missing field/value"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        setattr(request.user, field, value)
+        request.user.save()
+        return self._get_user_response(request.user)
     
     @action(detail=False, methods=['post'])
     def store_verification_code(self, request):
@@ -229,6 +234,7 @@ class CommunityViewSet(viewsets.ModelViewSet):
     queryset = Community.objects.all()
     serializer_class = CommunitySerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+    lookup_field = 'slug'
 
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
@@ -249,12 +255,15 @@ class CommunityViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def search_by_name(self, request):
-        query = request.query_params.get('query', None)
-        if query:
-            communities = Community.objects.filter(name__icontains=query)
-            serializer = self.get_serializer(communities, many=True)
-            return Response(serializer.data)
-        return Response({"detail": "No query provided."}, status=status.HTTP_400_BAD_REQUEST)
+        query = request.query_params.get('query')
+        if not query:
+            return Response(
+                {"detail": "Query parameter 'query' is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        communities = self.queryset.filter(name__icontains=query)
+        return self._paginated_response(communities)
     
     @action(detail=False, methods=['get'], url_path='details/(?P<slug>[^/.]+)')
     def details(self, request, slug=None):
@@ -274,6 +283,14 @@ class PublicationViewSet(viewsets.ModelViewSet):
     serializer_class = PublicationSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     pagination_class = PublicationPaginator
+    
+    def _paginate_response(self, queryset):
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
     
     def get_queryset(self):
         # Annotate the queryset with likes and dislikes counts
@@ -315,11 +332,7 @@ class PublicationViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def my_publications(self, request):
         publications = Publication.objects.filter(author=request.user)
-        page = self.paginate_queryset(publications)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        return Response(serializer.data)
+        return self._paginate_response(publications)
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
     def post_publication(self, request):
@@ -384,36 +397,34 @@ class PublicationViewSet(viewsets.ModelViewSet):
     def publications_by_community(self, request, slug=None):
         community = get_object_or_404(Community, slug=slug)
         publications = Publication.objects.filter(community=community)
-        page = self.paginate_queryset(publications)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        return Response(serializer.data)
+        return self._paginate_response(publications)
     
     @action(detail=False, methods=['get'])
     def all_publications(self, request):
         publications = Publication.objects.all()
-        page = self.paginate_queryset(publications)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(publications, many=True)
-        return Response(serializer.data)
+        return self._paginate_response(publications)
     
     @action(detail=False, methods=['get'], url_path='by-user/(?P<pk>[^/.]+)')
     def publications_by_user(self, request, pk=None):
         publications = Publication.objects.filter(author=pk)
-        page = self.paginate_queryset(publications)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        return Response(serializer.data)
+        return self._paginate_response(publications)
     
     @action(detail=True, methods=['delete'], permission_classes=[IsAdminOrCommunityCreator])
     def delete_publication(self, request, pk=None):
         publication = get_object_or_404(Publication, pk=pk)
         publication.delete()
         return Response({"detail": "Publication deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def liked_publications(self, request):
+        content_type = ContentType.objects.get_for_model(Publication)
+        liked_publication_ids = Like.objects.filter(
+            user=request.user,
+            content_type=content_type,
+            is_like=Like.LIKE
+        ).values_list('object_id', flat=True)
+        publications = Publication.objects.filter(id__in=liked_publication_ids)
+        return self._paginate_response(publications)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -421,14 +432,20 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    def _get_base_queryset(self):
+        """Base queryset with common select/prefetch optimizations"""
+        return self.queryset.select_related(
+            'author', 
+            'publication'
+        ).prefetch_related('replies')
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def my_comments(self, request):
-        comments = Comment.objects.filter(author=request.user)
-        serializer = self.get_serializer(comments, many=True)
-        return Response(serializer.data)  
+        comments = self._get_base_queryset().filter(author=request.user)
+        return self._paginated_response(comments)  
 
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def add_comment(self, request, pk=None):
@@ -458,24 +475,20 @@ class CommentViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def get_comments_by_publication(self, request, pk=None):
-        publication = get_object_or_404(Publication, pk=pk)
-        #parent_comment__isnull=True make func to fetch only top-level comment
-        #.prefetch_related('replies') caches all replies. reduces the number of queries
-        comments = Comment.objects.filter(publication=publication, parent_comment__isnull=True).prefetch_related('replies')
-        serializer = self.get_serializer(comments, many=True)
-        return Response(serializer.data)
+        comments = self._get_base_queryset().filter(
+            publication_id=pk,
+            parent_comment__isnull=True
+        )
+        return self._paginated_response(comments)
     
     @action(detail=True, methods=['delete'], permission_classes=[IsAdminOrCommunityCreator])
     def delete_comment(self, request, pk=None):
-        comment = get_object_or_404(Comment, pk=pk)
-        
-        # Mark the comment as deleted instead of actually deleting it
-        comment.text = "This comment was deleted."
+        comment = self.get_object()
+        comment.text = "[deleted]"
         comment.is_deleted = True
-        comment.author = None  # Optionally remove the author reference
+        comment.author = None
         comment.save()
-        
-        return Response({"detail": "Comment marked as deleted."}, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
@@ -485,6 +498,15 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+        
+    def _get_subscription(self, request):
+        """Helper to get subscription from request data"""
+        content_type = ContentType.objects.get(id=request.data.get('content_type'))
+        return Subscription.objects.get(
+            user=request.user,
+            content_type=content_type,
+            object_id=request.data.get('object_id')
+        )
    
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
     def my_subscriptions(self, request):
@@ -500,23 +522,20 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
     
-    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['post'])
     def unsubscribe(self, request):
-        content_type_id = request.data.get('content_type')
-        content_type = ContentType.objects.get(id=content_type_id)
-        object_id = request.data.get('object_id')
-        
-        subscription = Subscription.objects.get(user=request.user, content_type=content_type, object_id=object_id)
+        subscription = self._get_subscription(request)
         subscription.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
                
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=['get'])
     def check_subscription(self, request):
-        content_type_id = request.query_params.get('content_type')
-        content_type = ContentType.objects.get(id=content_type_id)
-        object_id = request.query_params.get('object_id')
-        subscription_exists = Subscription.objects.filter(user=request.user, content_type=content_type, object_id=object_id).exists() 
-        return Response({'subscribed': subscription_exists}, status=status.HTTP_200_OK)
+        exists = self.queryset.filter(
+            user=request.user,
+            content_type_id=request.query_params.get('content_type'),
+            object_id=request.query_params.get('object_id')
+        ).exists()
+        return Response({'subscribed': exists})
 
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated]) 
     def toggle_notifications(self, request):
@@ -532,29 +551,43 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
 class LikeViewSet(viewsets.ModelViewSet):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
-
+    
+    def _get_content_object(self, content_type_id, object_id):
+        """Helper to get content object with validation"""
+        content_type = ContentType.objects.get(pk=content_type_id)
+        model_class = content_type.model_class()
+        return model_class.objects.get(pk=object_id)
+    
     @action(detail=False, methods=['get'])
     def summary(self, request):
-        """
-        Fetch summary of likes and dislikes based on object_id and content_type
-        """
-        content_type = request.query_params.get('content_type')
+        content_type_id = request.query_params.get('content_type')
         object_id = request.query_params.get('object_id')
         
-        if not content_type or not object_id:
-            return Response({"error": "content_type and object_id are required parameters"}, status=status.HTTP_400_BAD_REQUEST)
+        if not content_type_id or not object_id:
+            return Response(
+                {"error": "content_type and object_id are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         
         try:
-            content_type_obj = ContentType.objects.get(id=content_type)
+            content_type = ContentType.objects.get(pk=content_type_id)
+            likes = Like.objects.filter(
+                content_type=content_type,
+                object_id=object_id,
+                is_like=Like.LIKE
+            ).count()
+            dislikes = Like.objects.filter(
+                content_type=content_type,
+                object_id=object_id,
+                is_like=Like.DISLIKE
+            ).count()
+            
+            return Response({"likes": likes, "dislikes": dislikes})
+            
         except ContentType.DoesNotExist:
-            return Response({"error": "Invalid content_type"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        likes_count = Like.objects.filter(content_type=content_type_obj, object_id=object_id, is_like=Like.LIKE).count()
-        dislikes_count = Like.objects.filter(content_type=content_type_obj, object_id=object_id, is_like=Like.DISLIKE).count()
-        return Response({
-            "likes": likes_count,
-            "dislikes": dislikes_count,
-        })
+            return Response({"error": "Invalid content_type"}, status=400)
+        except Exception as e:
+            return Response({"error": str(e)}, status=400)
 
     @action(detail=False, methods=['post'])
     def toggle(self, request):
